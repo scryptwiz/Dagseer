@@ -2,6 +2,7 @@
 
 import { createWeb3Modal } from "@web3modal/wagmi/react";
 import { defaultWagmiConfig } from "@web3modal/wagmi/react/config";
+import { metaMask, walletConnect, coinbaseWallet, injected, safe } from "wagmi/connectors";
 import { WagmiProvider } from "wagmi";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import { blockdagPrimordial } from "../chains";
@@ -21,6 +22,13 @@ const config = defaultWagmiConfig({
   chains,
   projectId,
   metadata,
+  coinbasePreference: "smartWalletOnly",
+  auth: {
+    email: false,
+    socials: [],
+    showWallets: true,
+    walletFeatures: false,
+  },
 });
 
 createWeb3Modal({ wagmiConfig: config, projectId });
