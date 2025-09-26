@@ -52,7 +52,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
       <div className="flex items-center mb-8">
         <button
           onClick={onBack}
-          className="flex items-center space-x-2 text-white/70 hover:text-white transition-colors mr-6"
+          className="flex items-center space-x-2 text-gray-400 dark:text-white/70 hover:text-white transition-colors mr-6"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Markets</span>
@@ -73,38 +73,38 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
       <div className="grid lg:grid-cols-2 gap-8">
         {/* Market Info */}
         <div>
-          <h1 className="text-3xl font-bold text-white mb-6 leading-tight">
+          <h1 className="text-3xl font-bold text-black dark:text-white mb-6 leading-tight">
             {market.title}
           </h1>
           
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6 mb-6">
-            <h3 className="text-xl font-semibold text-white mb-4">Market Details</h3>
-            <p className="text-white/70 leading-relaxed mb-6">
+          <div className="backdrop-blur-xl bg-white/5 border  dark:border-white/10 rounded-2xl p-6 mb-6">
+            <h3 className="text-xl font-semibold text-black dark:text-white mb-4">Market Details</h3>
+            <p className="text-black/50 dark:text-white/70 leading-relaxed mb-6">
               {market.description}
             </p>
             
             <div className="grid grid-cols-2 gap-4">
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="text-white/60 text-sm mb-1">Total Volume</div>
-                <div className="text-2xl font-bold text-white">${market.totalVolume}</div>
+              <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-4">
+                <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Total Volume</div>
+                <div className="text-2xl font-bold text-black dark:text-white">${market.totalVolume}</div>
               </div>
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="text-white/60 text-sm mb-1">Participants</div>
-                <div className="text-2xl font-bold text-white">{market.participants.toLocaleString()}</div>
+              <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-4">
+                <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Participants</div>
+                <div className="text-2xl font-bold text-black dark:text-white">{market.participants.toLocaleString()}</div>
               </div>
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="text-white/60 text-sm mb-1">Liquidity</div>
-                <div className="text-2xl font-bold text-white">${market.liquidity}</div>
+              <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-4">
+                <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Liquidity</div>
+                <div className="text-2xl font-bold text-black dark:text-white">${market.liquidity}</div>
               </div>
-              <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-4">
-                <div className="text-white/60 text-sm mb-1">Ends</div>
-                <div className="text-lg font-semibold text-white">{market.endsAt}</div>
+              <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-4">
+                <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Ends</div>
+                <div className="text-lg font-semibold text-black dark:text-white">{market.endsAt}</div>
               </div>
             </div>
           </div>
 
           {/* Current Odds */}
-          <div className="backdrop-blur-xl bg-white/5 border border-white/10 rounded-2xl p-6">
+          <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6">
             <h3 className="text-xl font-semibold text-white mb-4">Current Odds</h3>
             
             <div className="flex justify-between items-center mb-4">
@@ -133,19 +133,19 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
         </div>
 
         {/* Staking Panel */}
-        <div className="backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border border-white/20 rounded-2xl p-6 h-fit">
-          <h3 className="text-2xl font-bold text-white mb-6">Place Your Stake</h3>
+        <div className="backdrop-blur-xl bg-gradient-to-br from-white/10 to-white/5 border dark:border-white/20 rounded-2xl p-6 h-fit">
+          <h3 className="text-2xl font-bold text-black dark:text-white mb-6">Place Your Stake</h3>
           
           {/* Outcome Selection */}
           <div className="mb-6">
-            <div className="text-white/80 mb-3 font-medium">Choose Outcome</div>
+            <div className="text-gray-400 dark:text-white/80 mb-3 font-medium">Choose Outcome</div>
             <div className="grid grid-cols-2 gap-3">
               <button
                 onClick={() => setSelectedOutcome('yes')}
                 className={`p-4 rounded-xl border-2 transition-all ${
                   selectedOutcome === 'yes'
                     ? 'bg-green-500/20 border-green-400 text-green-400'
-                    : 'bg-white/5 border-white/20 text-white/70 hover:border-green-400/50 hover:text-green-400'
+                    : 'bg-white/5 dark:border-white/20 text-black/50 dark:text-white/70 hover:border-green-400/50 hover:text-green-400'
                 }`}
               >
                 <div className="font-semibold text-lg">YES</div>
@@ -156,7 +156,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                 className={`p-4 rounded-xl border-2 transition-all ${
                   selectedOutcome === 'no'
                     ? 'bg-red-500/20 border-red-400 text-red-400'
-                    : 'bg-white/5 border-white/20 text-white/70 hover:border-red-400/50 hover:text-red-400'
+                    : 'bg-white/5 dark:border-white/20 text-black/50 dark:text-white/70 hover:border-red-400/50 hover:text-red-400'
                 }`}
               >
                 <div className="font-semibold text-lg">NO</div>
@@ -167,11 +167,11 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
 
           {/* Stake Amount */}
           <div className="mb-6">
-            <div className="text-white/80 mb-3 font-medium">Stake Amount (BDAG)</div>
+            <div className="text-black/50 dark:text-white/80 mb-3 font-medium">Stake Amount (BDAG)</div>
             <div className="flex items-center space-x-3">
               <button
                 onClick={() => adjustAmount(-10)}
-                className="w-10 h-10 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors flex items-center justify-center"
+                className="w-10 h-10 rounded-lg bg-white/10 border dark:border-white/20 text-black dark:text-white hover:bg-white/20 transition-colors flex items-center justify-center"
               >
                 <Minus className="w-4 h-4" />
               </button>
@@ -179,12 +179,12 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                 type="number"
                 value={stakeAmount}
                 onChange={(e) => setStakeAmount(e.target.value)}
-                className="flex-1 px-4 py-3 bg-white/5 border border-white/20 rounded-xl text-white text-center text-xl font-semibold focus:border-cyan-400 focus:outline-none transition-colors"
+                className="flex-1 px-4 py-3 bg-white/5 border dark:border-white/20 rounded-xl text-black dark:text-white text-center text-xl font-semibold focus:border-cyan-400 focus:outline-none transition-colors"
                 placeholder="0"
               />
               <button
                 onClick={() => adjustAmount(10)}
-                className="w-10 h-10 rounded-lg bg-white/10 border border-white/20 text-white hover:bg-white/20 transition-colors flex items-center justify-center"
+                className="w-10 h-10 rounded-lg bg-white/10 border dark:border-white/20 text-black dark:text-white hover:bg-white/20 transition-colors flex items-center justify-center"
               >
                 <Plus className="w-4 h-4" />
               </button>
@@ -194,7 +194,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                 <button
                   key={amount}
                   onClick={() => setStakeAmount(amount.toString())}
-                  className="px-3 py-1 text-sm rounded-lg bg-white/10 border border-white/20 text-white/70 hover:text-white hover:border-cyan-400/50 transition-all"
+                  className="px-3 py-1 text-sm rounded-lg bg-white/10 border dark:border-white/20 text-black dark:text-white/70 hover:text-white hover:border-cyan-400/50 transition-all"
                 >
                   {amount}
                 </button>
@@ -236,7 +236,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
             )}
           </button>
           
-          <div className="mt-4 text-center text-white/60 text-sm">
+          <div className="mt-4 text-center text-black/50 dark:text-white/60 text-sm">
             <div>Your balance: <span className="text-cyan-400 font-medium">1,250 BDAG</span></div>
           </div>
         </div>

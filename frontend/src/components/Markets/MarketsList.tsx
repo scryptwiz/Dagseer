@@ -103,17 +103,17 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
     <div className="max-w-7xl mx-auto px-6 py-8">
       {/* Header */}
       <div className="mb-8">
-        <h1 className="text-4xl font-bold text-white mb-4">
+        <h1 className="text-4xl font-bold text-black dark:text-white mb-4">
           Prediction Markets
         </h1>
-        <p className="text-white/70 text-lg">
+        <p className="dark:text-white/70 text-black/50 text-lg">
           Discover and trade on the most popular prediction markets
         </p>
       </div>
 
       {/* Trending Markets */}
       <div className="mb-8">
-        <h2 className="text-2xl font-semibold text-white mb-4 flex items-center">
+        <h2 className="text-2xl font-semibold text-black/80 dark:text-white mb-4 flex items-center">
           <TrendingUp className="w-6 h-6 mr-2 text-cyan-400" />
           Trending Markets
         </h2>
@@ -124,7 +124,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
               <div
                 key={market.id}
                 onClick={() => onSelectMarket(market.id)}
-                className="group backdrop-blur-xl bg-gradient-to-r from-white/5 to-white/10 border border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20"
+                className="group backdrop-blur-xl bg-gradient-to-r from-white/5 to-white/10 border  dark:border-white/20 rounded-2xl p-6 hover:bg-white/15 transition-all duration-300 cursor-pointer hover:scale-105 hover:shadow-2xl hover:shadow-cyan-500/20"
               >
                 <div className="flex items-start justify-between mb-4">
                   <div
@@ -140,7 +140,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   </div>
                 </div>
 
-                <h3 className="text-xl font-semibold text-white mb-4 group-hover:text-cyan-400 transition-colors">
+                <h3 className="text-xl font-semibold text-gray-800 dark:text-white mb-4 group-hover:text-cyan-400 transition-colors">
                   {market.title}
                 </h3>
 
@@ -165,20 +165,20 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="flex items-center justify-between text-white/60 text-sm">
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
-                      <Users className="w-4 h-4 mr-1" />
-                      <span>{market.participants.toLocaleString()}</span>
+                      <Users className="w-4 h-4 mr-1 text-gray-400" />
+                      <span className="text-gray-400">{market.participants.toLocaleString()}</span>
                     </div>
-                    <div>${market.totalVolume}</div>
+                    <div className="text-gray-400">${market.totalVolume}</div>
                   </div>
                   <div className="flex items-center">
-                    <Clock className="w-4 h-4 mr-1" />
-                    <span>{market.endsAt}</span>
+                    <Clock className="w-4 h-4 mr-1 text-gray-400" />
+                    <span className="text-gray-400">{market.endsAt}</span>
                   </div>
                 </div>
 
                 <div className="flex items-center justify-end mt-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-sm mr-2">View Details</span>
-                  <ArrowRight className="w-4 h-4" />
+                  <span className="text-sm mr-2 text-gray-400">View Details</span>
+                  <ArrowRight className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
             ))}
@@ -193,7 +193,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
             <div
               key={market.id}
               onClick={() => onSelectMarket(market.id)}
-              className="group backdrop-blur-xl bg-white/5 border border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all duration-300 cursor-pointer hover:border-cyan-400/30"
+              className="group backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-6 hover:bg-white/10 transition-all duration-300 cursor-pointer hover:border-cyan-400/30"
             >
               <div className="flex items-center justify-between">
                 <div className="flex-1">
@@ -212,16 +212,16 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                       </div>
                     )}
                   </div>
-                  <h3 className="text-lg font-medium text-white mb-3 group-hover:text-cyan-400 transition-colors">
+                  <h3 className="text-lg font-medium text-black/80 dark:text-white mb-3 group-hover:text-cyan-400 transition-colors">
                     {market.title}
                   </h3>
                   <div className="flex items-center space-x-6 text-white/60 text-sm">
-                    <div className="flex items-center">
+                    <div className="flex items-center text-gray-400">
                       <Users className="w-4 h-4 mr-1" />
                       <span>{market.participants.toLocaleString()}</span>
                     </div>
                     <div>${market.totalVolume}</div>
-                    <div className="flex items-center">
+                    <div className="flex items-center text-gray-400">
                       <Clock className="w-4 h-4 mr-1" />
                       <span>{market.endsAt}</span>
                     </div>
@@ -233,15 +233,15 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                     <div className="text-2xl font-bold text-green-400">
                       {market.yesPercentage}%
                     </div>
-                    <div className="text-xs text-white/60">YES</div>
+                    <div className="text-xs text-gray-400 dark:text-white/60 ">YES</div>
                   </div>
                   <div className="text-center">
                     <div className="text-2xl font-bold text-red-400">
                       {100 - market.yesPercentage}%
                     </div>
-                    <div className="text-xs text-white/60">NO</div>
+                    <div className="text-xs text-gray-400 dark:text-white/60">NO</div>
                   </div>
-                  <ArrowRight className="w-5 h-5 text-white/40 group-hover:text-cyan-400 transition-colors" />
+                  <ArrowRight className="w-5 h-5 text-gray-400 dark:text-white/40 group-hover:text-cyan-400 transition-colors" />
                 </div>
               </div>
             </div>
