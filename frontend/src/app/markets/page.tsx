@@ -1,10 +1,10 @@
-"use client"
+"use client";
 
 import React, { useState } from "react";
 import MarketsList from "@/components/Markets/MarketsList";
 import { useRouter } from "next/navigation";
 
-const page = () => {
+export default function Page() {
   const router = useRouter();
   const [selectedMarketId, setSelectedMarketId] = useState<string>("");
 
@@ -18,6 +18,4 @@ const page = () => {
       <MarketsList onSelectMarket={navigateToMarket} />
     </main>
   );
-};
-
-export default page;
+}
