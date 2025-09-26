@@ -28,10 +28,15 @@ out/
 cache/
 artifacts/
 *.json
+!package.json
+!package-lock.json
+!pnpm-lock.yaml
 *.log
 
 # Environment files
-.env
+.envgit add -f package.json package-lock.json pnpm-lock.yaml
+git commit -m "Track package and lock files"
+git push
 .env.local
 .env.development.local
 .env.test.local
