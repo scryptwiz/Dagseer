@@ -31,6 +31,7 @@ artifacts/
 !package.json
 !package-lock.json
 !pnpm-lock.yaml
+!tsconfig.json
 *.log
 
 # Environment files
