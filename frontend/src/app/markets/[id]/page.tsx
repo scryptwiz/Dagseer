@@ -3,7 +3,7 @@
 import { useParams, useRouter } from "next/navigation";
 import MarketDetail from "@/components/Markets/MarketDetail";
 
-const page = ({}) => {
+export default function Page() {
   const params = useParams();
   const id = params.id as string;
   const router = useRouter();
@@ -13,6 +13,4 @@ const page = ({}) => {
       <MarketDetail marketId={id} onBack={() => router.push("/markets")} />
     </main>
   );
-};
-
-export default page;
+}

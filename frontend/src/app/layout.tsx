@@ -2,7 +2,6 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ThemeProvider } from "@/components/theme-provider";
 import { ThemeToggle } from "@/components/theme-toggle";
 
 const inter = Inter({ subsets: ["latin"] });
@@ -20,10 +19,10 @@ export const metadata: Metadata = {
         url: "/og_img.png",
         width: 1200,
         height: 630,
-        alt: "DAGSeer Open Graph Image"
-      }
-    ]
-  }
+        alt: "DAGSeer Open Graph Image",
+      },
+    ],
+  },
 };
 
 export default function RootLayout({
@@ -34,12 +33,12 @@ export default function RootLayout({
   return (
     <html lang="en">
       <body className={inter.className}>
-        <ThemeProvider attribute="class" defaultTheme="system" enableSystem disableTransitionOnChange>
-          <Providers>{children}</Providers>
+        <Providers>
+          {children}
           <div className="fixed bottom-5 right-5">
-             <ThemeToggle />
-           </div>
-        </ThemeProvider>
+            <ThemeToggle />
+          </div>
+        </Providers>
       </body>
     </html>
   );
