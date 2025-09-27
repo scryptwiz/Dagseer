@@ -4,19 +4,39 @@ import { verifyToken } from "@/lib/auth";
 
 // GET markets
 export async function GET() {
-  const { data, error } = await supabase.from("markets").select("*");
+  try {
+    const { data, error } = await supabase.from("markets").select(`
+        id,
+        title,
+        description,
+        min_stake,
+        max_stake,
+        is_active,
+        start_date,
+        end_date,
+        trending,
+        created_at,
+        updated_at,
+        category:category_id ( id, name )
+      `);
 
-  if (error) {
+    if (error) {
+      return NextResponse.json(
+        { success: false, error: error.message },
+        { status: 500 }
+      );
+    }
+
     return NextResponse.json(
-      { success: false, error: error.message },
+      { success: true, message: "Markets fetched successfully", data },
+      { status: 200 }
+    );
+  } catch (err: any) {
+    return NextResponse.json(
+      { success: false, message: err.message },
       { status: 500 }
     );
   }
-
-  return NextResponse.json(
-    { success: true, message: "Markets fetched successfully", data },
-    { status: 200 }
-  );
 }
 
 // POST new market
