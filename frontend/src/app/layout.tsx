@@ -1,16 +1,12 @@
 import type { Metadata } from "next";
-import { Inter, Outfit } from "next/font/google";
+import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ThemeToggle } from "@/components/theme-toggle";
 import { Header } from "@/components/layouts/header";
-// import { Geist } from 'next/font/google'
 
 const inter = Inter({
   subsets: ["latin"],
 });
-
-export const outfit = Outfit({ subsets: ["latin"] });
 
 export const metadata: Metadata = {
   title: "DAGSeer – Forecast the Future, On-Chain",
