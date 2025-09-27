@@ -2,7 +2,7 @@
 
 Forecast the Future, On-Chain.
 
-[Live Demo](https://dagseer.vercel.app) | [GitHub](https://github.com/scryptwiz/Dagseer)
+[Live Demo](https://dagseer.vercel.app) | [GitHub](https://github.com/scryptwiz/Dagseer) | [Video Demo]([https://github.com/scryptwiz/Dagseer](https://drive.google.com/file/d/1VUX-CKqQcX3OL1inQb9CML01vbC0uzSZ/view?usp=sharing))
 
 ---
 
