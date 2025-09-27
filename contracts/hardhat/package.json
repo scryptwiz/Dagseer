@@ -1,7 +1,7 @@
 {
-  "name": "blockdag-contracts",
+  "name": "dagseer-contracts",
   "version": "1.0.0",
-  "description": "BlockDAG Smart Contracts",
+  "description": "DAGSEER Smart Contracts(BDAG)",
   "scripts": {
     "compile": "hardhat compile",
     "test": "hardhat test",
@@ -11,6 +11,7 @@
     "@nomicfoundation/hardhat-ethers": "^3.0.5",
     "@nomicfoundation/hardhat-toolbox": "^4.0.0",
     "@nomicfoundation/hardhat-verify": "^2.0.0",
+    "@openzeppelin/contracts": "^5.0.1",
     "@openzeppelin/hardhat-upgrades": "^3.9.0",
     "@types/node": "^20.11.24",
     "ethers": "^6.11.1",
@@ -19,7 +20,6 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "@openzeppelin/contracts": "^5.0.1",
     "dotenv": "^16.4.5"
   }
 }
