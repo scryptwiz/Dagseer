@@ -3,21 +3,15 @@
 import React, { useState } from "react";
 import { ArrowLeft, TrendingUp, Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
-import { useAccount, useWatchContractEvent } from "wagmi";
-import { formatEther } from "viem";
+import { useAccount } from "wagmi";
 import ConnectButton from "../ConnectButton";
 import { useStakeContract } from "@/hooks/useStake";
-import { abi } from "@/constants/abi";
 
 interface MarketDetailProps {
   market: any;
   marketId: string;
   onBack: () => void;
 }
-
-import { contractAddress } from "@/constants";
-
-const CONTRACT_ADDRESS = contractAddress as `0x${string}`;
 
 export default function MarketDetail({ market, marketId, onBack }: MarketDetailProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<"yes" | "no">("yes");
@@ -26,36 +20,6 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
   const { isConnected, address } = useAccount();
   const { placeStake } = useStakeContract();
 
-  // Listen for StakePlaced events
-  useWatchContractEvent({
-    address: CONTRACT_ADDRESS,
-    abi: abi,
-    eventName: "StakePlaced",
-    onLogs: (logs) => {
-      logs.forEach((log) => {
-        const { user, choice, amount, userId, marketId, success } = (log as any).args;
-        console.log(
-          `Stake: User ${user}, Choice ${choice ? "Yes" : "No"}, Amount ${formatEther(
-            amount
-          )} BDAG, UserId ${userId}, MarketId ${marketId}, Success ${success}`
-        );
-        if (success) {
-          // Call API on success (commented for now)
-          // fetch('/api/stake-success', {
-          //   method: 'POST',
-          //   body: JSON.stringify({ user, choice, amount: formatEther(amount), userId, marketId }),
-          //   headers: { 'Content-Type': 'application/json' },
-          // });
-          alert(
-            `Stake placed: ${formatEther(amount)} BDAG on ${
-              choice ? "Yes" : "No"
-            } for market ${marketId}`
-          );
-        }
-      });
-    },
-  });
-
   const handleStake = async () => {
     if (!address) {
       console.error("No wallet connected");
@@ -63,6 +27,9 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
     }
     setIsStaking(true);
     try {
+      // TODO: Syntax Uncomment this check if you want to enforce wallet connection
+      // if (!isConnected || !address) throw new Error("Wallet not connected");
+
       const tx = await placeStake({
         choice: selectedOutcome === "yes",
         amount: stakeAmount,
