@@ -7,13 +7,18 @@ interface CategoryProps {
   name: string;
 }
 
+interface StatsProps {
+  yesCount: number;
+  noCount: number;
+  totalAmount: number;
+  totalStakers: number;
+}
+
 interface ApiMarket {
   id: string;
   title: string;
   category: CategoryProps;
-  yesPercentage: number
-  totalVolume: string
-  participants: number
+  stats: StatsProps;
   end_date: string;
   trending: boolean;
 }
@@ -33,17 +38,17 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
         if (!res.ok) throw new Error("Failed to fetch markets");
 
         const result = await res.json();
-        const apiMarkets: ApiMarket[] = Array.isArray(result)
-          ? result
-          : result.data;
+        const apiMarkets: ApiMarket[] = Array.isArray(result) ? result : result.data;
 
         const formattedMarkets: ApiMarket[] = apiMarkets.map((m) => ({
           id: m.id,
           title: m.title,
           category: m.category,
-          yesPercentage: Math.floor(Math.random() * 100),
-          totalVolume: `${Math.floor(Math.random() * 1000)}K`,
-          participants: Math.floor(Math.random() * 2000),
+          stats: m.stats,
+          // yesCount: m.stats.yesCount,
+          // noCount: m.stats.noCount,
+          // totalAmount: m.stats.totalAmount,
+          // totalStakers: m.stats.totalStakers,
           end_date: new Date(m.end_date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -137,16 +142,20 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2 text-xs sm:text-sm">
                     <span className="text-green-400 font-semibold">
-                      YES {market.yesPercentage}%
+                      YES {market.stats.yesCount}%
                     </span>
-                    <span className="text-red-400 font-semibold">
-                      NO {100 - market.yesPercentage}%
-                    </span>
+                    <span className="text-red-400 font-semibold">NO {market.stats.noCount}%</span>
                   </div>
                   <div className="h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 ease-out"
-                      style={{ width: `${market.yesPercentage}%` }}
+                      style={{
+                        width: `${
+                          market.stats.yesCount > 0
+                            ? (market.stats.yesCount / market.stats.totalStakers) * 100
+                            : 0
+                        }%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -156,11 +165,9 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-1 text-gray-400" />
-                      <span className="text-gray-400">
-                        {market.participants.toLocaleString()}
-                      </span>
+                      <span className="text-gray-400">{market.stats.totalStakers}</span>
                     </div>
-                    <div className="text-gray-400">${market.totalVolume}</div>
+                    <div className="text-gray-400">${market.stats.totalAmount}</div>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1 text-gray-400" />
@@ -169,9 +176,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 </div>
 
                 <div className="flex items-center justify-end mt-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-xs sm:text-sm mr-2 text-gray-400">
-                    View Details
-                  </span>
+                  <span className="text-xs sm:text-sm mr-2 text-gray-400">View Details</span>
                   <ArrowRight className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
@@ -181,10 +186,8 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
 
       {/* All Markets */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">
-          All Markets
-        </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">All Markets</h2>
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-1  lg:grid-cols-1">
           {markets.map((market) => (
             <div
               key={market.id}
@@ -215,9 +218,9 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   <div className="flex flex-wrap items-center gap-4 text-white/60 text-xs sm:text-sm">
                     <div className="flex items-center text-gray-400">
                       <Users className="w-4 h-4 mr-1" />
-                      <span>{market.participants.toLocaleString()}</span>
+                      <span>{market.stats.totalStakers}</span>
                     </div>
-                    <div>${market.totalVolume}</div>
+                    <div>${market.stats.totalAmount}</div>
                     <div className="flex items-center text-gray-400">
                       <Clock className="w-4 h-4 mr-1" />
                       <span>{market.end_date}</span>
@@ -229,19 +232,15 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="flex items-center justify-between sm:justify-end gap-6">
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-green-400">
-                      {market.yesPercentage}%
+                      {market.stats.yesCount}%
                     </div>
-                    <div className="text-xs text-gray-400 dark:text-white/60 ">
-                      YES
-                    </div>
+                    <div className="text-xs text-gray-400 dark:text-white/60 ">YES</div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-red-400">
-                      {100 - market.yesPercentage}%
+                      {market.stats.noCount}%
                     </div>
-                    <div className="text-xs text-gray-400 dark:text-white/60">
-                      NO
-                    </div>
+                    <div className="text-xs text-gray-400 dark:text-white/60">NO</div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 dark:text-white/40 group-hover:text-cyan-400 transition-colors" />
                 </div>

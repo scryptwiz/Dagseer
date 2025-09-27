@@ -5,7 +5,8 @@ import { verifyToken } from "@/lib/auth";
 // GET markets
 export async function GET() {
   try {
-    const { data, error } = await supabase.from("markets").select(`
+    const { data: markets, error: marketError } = await supabase.from("markets")
+      .select(`
         id,
         title,
         description,
@@ -20,15 +21,59 @@ export async function GET() {
         category:category_id ( id, name )
       `);
 
-    if (error) {
+    if (marketError) {
       return NextResponse.json(
-        { success: false, error: error.message },
+        { success: false, error: marketError.message },
         { status: 500 }
       );
     }
 
+    // Fetch stakes for all markets
+    const { data: stakes, error: stakesError } = await supabase
+      .from("stakes")
+      .select("market_id, amount, choice");
+
+    if (stakesError) {
+      return NextResponse.json(
+        { success: false, error: stakesError.message },
+        { status: 500 }
+      );
+    }
+
+    // Aggregate stakes per market
+    const marketsWithStats = markets.map((market) => {
+      const marketStakes = stakes.filter((s) => s.market_id === market.id);
+
+      const yesCount = marketStakes.filter(
+        (s) => s.choice.toLowerCase() === "yes"
+      ).length;
+      const noCount = marketStakes.filter(
+        (s) => s.choice.toLowerCase() === "no"
+      ).length;
+
+      const totalStakers = marketStakes.length;
+      const totalAmount = marketStakes.reduce(
+        (sum, s) => sum + Number(s.amount),
+        0
+      );
+
+      return {
+        ...market,
+        stats: {
+          yesCount,
+          noCount,
+          totalStakers,
+          totalAmount,
+        },
+      };
+    });
+
     return NextResponse.json(
-      { success: true, message: "Markets fetched successfully", data },
+      {
+        success: true,
+        message: "Markets fetched successfully",
+        data: marketsWithStats,
+      },
       { status: 200 }
     );
   } catch (err: any) {
