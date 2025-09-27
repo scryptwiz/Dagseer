@@ -6,7 +6,7 @@ import {ReentrancyGuard} from "@openzeppelin/contracts/security/ReentrancyGuard.
 
 contract Stake is ReentrancyGuard {
     // Track if winnings have been paid for a market
-    mapping(uint256 => bool) public marketPaid;
+    mapping(string => bool) public marketPaid;
 
     // Stake Payload structure
     struct StakePayload {
@@ -29,7 +29,7 @@ contract Stake is ReentrancyGuard {
 
     // Event for payout
     event WinningsDistributed(
-        uint256 indexed marketId,
+        string indexed marketId,
         bool winningChoice,
         uint256 totalWinning,
         uint256 totalLosing
@@ -49,7 +49,7 @@ contract Stake is ReentrancyGuard {
     }
 
     // Mapping from marketId to array of stakes for that market
-    mapping(uint256 => StakeInfo[]) public marketStakes;
+    mapping(string => StakeInfo[]) public marketStakes;
 
     function placeStake(StakePayload memory payload) external nonReentrant {
         require(payload.amount >= payload.minAmount, "Stake below minimum");
@@ -101,14 +101,14 @@ contract Stake is ReentrancyGuard {
 
     // Get all stakes for a market (by marketId as string)
     function getAllStakesForMarket(
-        uint256 marketId
+        string memory marketId
     ) external view returns (StakeInfo[] memory) {
         return marketStakes[marketId];
     }
 
     // Get all stakes for a market with choice == true
     function getStakesByChoiceTrue(
-        uint256 marketId
+        string memory marketId
     ) external view returns (StakeInfo[] memory) {
         StakeInfo[] memory allStakes = marketStakes[marketId];
         uint256 count = 0;
@@ -130,7 +130,7 @@ contract Stake is ReentrancyGuard {
 
     // Get all stakes for a market with choice == false
     function getStakesByChoiceFalse(
-        uint256 marketId
+        string memory marketId
     ) external view returns (StakeInfo[] memory) {
         StakeInfo[] memory allStakes = marketStakes[marketId];
         uint256 count = 0;
@@ -152,7 +152,7 @@ contract Stake is ReentrancyGuard {
 
     // Distribute winnings to users who staked on the winning choice
     function distributeWinnings(
-        uint256 marketId,
+        string memory marketId,
         bool winningChoice
     ) external nonReentrant {
         require(!marketPaid[marketId], "Winnings already distributed");
