@@ -168,77 +168,77 @@ function HowItWorks() {
   );
 }
 
-function TrendingMarket() {
-  return (
-    <section className="py-20 flex justify-center items-center flex-col gap-8">
-      <div className="container mx-auto px-2">
-        {/* header */}
-        <div className="flex flex-col items-center gap-2">
-          <p className="uppercase text-xl">Trending Market</p>
-          <h3 className="font-bold text-[40px] text-center">
-            See What&apos;s Trending Right Now
-          </h3>
-        </div>
+// function TrendingMarket() {
+//   return (
+//     <section className="py-20 flex justify-center items-center flex-col gap-8">
+//       <div className="container mx-auto px-2">
+//         {/* header */}
+//         <div className="flex flex-col items-center gap-2">
+//           <p className="uppercase text-xl">Trending Market</p>
+//           <h3 className="font-bold text-[40px] text-center">
+//             See What&apos;s Trending Right Now
+//           </h3>
+//         </div>
 
-        {/* market card */}
-        <div className="mt-12 max-w-md mx-auto bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300">
-          <h4 className="text-2xl font-semibold mb-4">
-            Will Bitcoin (BTC) close above $30,000 on December 31, 2024?
-          </h4>
-          <p className="text-white/70 mb-6">
-            Join the prediction market and stake your BDAG tokens now!
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
+//         {/* market card */}
+//         <div className="mt-12 max-w-md mx-auto bg-white/5 border border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300">
+//           <h4 className="text-2xl font-semibold mb-4">
+//             Will Bitcoin (BTC) close above $30,000 on December 31, 2024?
+//           </h4>
+//           <p className="text-white/70 mb-6">
+//             Join the prediction market and stake your BDAG tokens now!
+//           </p>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
 
-export const aboutSEER = [
-  {
-    question: "What is the SEER token?",
-    answer: "A utility token designed to power prediction markets on DAGSeer.",
-  },
-  {
-    question: "Future Utility",
-    answer: "Will be used for staking, governance, and exclusive markets.",
-  },
-  {
-    question: "Healthy Ecosystem",
-    answer: "Built with fairness, transparency, and sustainability in mind.",
-  },
-  {
-    question: "Vision",
-    answer:
-      "Seer will evolve into the core incentive layer, rewarding users who forecast the future, on-chain.",
-  },
-];
+// export const aboutSEER = [
+//   {
+//     question: "What is the SEER token?",
+//     answer: "A utility token designed to power prediction markets on DAGSeer.",
+//   },
+//   {
+//     question: "Future Utility",
+//     answer: "Will be used for staking, governance, and exclusive markets.",
+//   },
+//   {
+//     question: "Healthy Ecosystem",
+//     answer: "Built with fairness, transparency, and sustainability in mind.",
+//   },
+//   {
+//     question: "Vision",
+//     answer:
+//       "Seer will evolve into the core incentive layer, rewarding users who forecast the future, on-chain.",
+//   },
+// ];
 
-export function AboutSEERToken() {
-  return (
-    <section className="py-20 flex justify-center items-center flex-col gap-8">
-      <div className="container mx-auto px-2">
-        {/* header */}
-        <div className="flex flex-col items-center gap-2">
-          <p className="uppercase text-xl">About SEER Token</p>
-          <h3 className="font-bold text-3xl text-center">
-            Fueling the Future of On-Chain Predictions
-          </h3>
-        </div>
+// export function AboutSEERToken() {
+//   return (
+//     <section className="py-20 flex justify-center items-center flex-col gap-8">
+//       <div className="container mx-auto px-2">
+//         {/* header */}
+//         <div className="flex flex-col items-center gap-2">
+//           <p className="uppercase text-xl">About SEER Token</p>
+//           <h3 className="font-bold text-3xl text-center">
+//             Fueling the Future of On-Chain Predictions
+//           </h3>
+//         </div>
 
-        {/* content */}
-        <div className="mt-12 max-w-3xl mx-auto text-center">
-          <p className="text-white/70 mb-4">
-            The SEER token is the native utility token of the DAGSeer platform,
-            designed to incentivize accurate predictions and active
-            participation in the ecosystem.
-          </p>
-          <p className="text-white/70 mb-4">
-            Holders can stake SEER tokens to participate in prediction markets,
-            earn rewards for accurate predictions, and help secure the network.
-          </p>
-        </div>
-      </div>
-    </section>
-  );
-}
+//         {/* content */}
+//         <div className="mt-12 max-w-3xl mx-auto text-center">
+//           <p className="text-white/70 mb-4">
+//             The SEER token is the native utility token of the DAGSeer platform,
+//             designed to incentivize accurate predictions and active
+//             participation in the ecosystem.
+//           </p>
+//           <p className="text-white/70 mb-4">
+//             Holders can stake SEER tokens to participate in prediction markets,
+//             earn rewards for accurate predictions, and help secure the network.
+//           </p>
+//         </div>
+//       </div>
+//     </section>
+//   );
+// }
