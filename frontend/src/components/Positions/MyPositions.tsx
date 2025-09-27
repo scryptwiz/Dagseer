@@ -136,10 +136,10 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
   return (
     <div className="max-w-7xl mx-auto px-4 sm:px-6 py-6 sm:py-8">
       {/* Header */}
-      <div className="flex flex-col sm:flex-row sm:items-center mb-8 gap-4">
+      <div className="flex flex-col   mb-8 gap-4">
         <button
           onClick={onBack}
-          className="flex items-center space-x-2 text-gray-400 dark:text-white/70 hover:text-white transition-colors"
+          className="flex items-center space-x-2 text-muted-foreground  transition-colors"
         >
           <ArrowLeft className="w-5 h-5" />
           <span>Back to Markets</span>
@@ -238,7 +238,7 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
       </div>
 
       {/* Quick Claim All */}
-      {unclaimedWinnings > 0 && (
+      {/* {unclaimedWinnings > 0 && (
         <div className="mb-6 p-4 bg-gradient-to-r from-green-500/10 to-emerald-500/10 border border-green-400/20 rounded-2xl">
           <div className="flex flex-col sm:flex-row items-start sm:items-center justify-between gap-4">
             <div>
@@ -254,7 +254,7 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
             </button>
           </div>
         </div>
-      )}
+      )} */}
 
       {/* Positions List */}
       <div className="space-y-4">
@@ -344,13 +344,13 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
                     <div className="text-2xl font-bold text-green-400">
                       {position.potentialPayout} BDAG
                     </div>
-                    <button
+                    {/* <button
                       onClick={() => handleClaim(position.id)}
                       disabled={claimingId === position.id}
                       className="mt-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg text-white font-medium hover:from-green-400 hover:to-emerald-500 transition-all disabled:opacity-50 w-full sm:w-auto"
                     >
                       {claimingId === position.id ? "Claiming..." : "Claim"}
-                    </button>
+                    </button> */}
                   </div>
                 )}
 
