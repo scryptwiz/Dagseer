@@ -11,9 +11,9 @@ interface ApiMarket {
   id: string;
   title: string;
   category: CategoryProps;
-  yesPercentage: number
-  totalVolume: string
-  participants: number
+  yesPercentage: number;
+  totalVolume: string;
+  participants: number;
   end_date: string;
   trending: boolean;
 }
@@ -83,7 +83,9 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
   };
 
   if (loading) {
-    return <p className="text-center py-10 text-gray-500">Loading markets...</p>;
+    return (
+      <p className="text-center py-10 text-gray-500">Loading markets...</p>
+    );
   }
 
   return (
@@ -181,10 +183,10 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
 
       {/* All Markets */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-white mb-4">
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">
           All Markets
         </h2>
-        <div className="grid gap-4 grid-cols-1 sm:grid-cols-2 lg:grid-cols-3">
+        <div className="grid gap-4 grid-cols-1 sm:grid-cols-1  lg:grid-cols-1">
           {markets.map((market) => (
             <div
               key={market.id}
