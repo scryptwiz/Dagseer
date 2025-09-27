@@ -3,6 +3,11 @@
 import React, { useState } from "react";
 import { ArrowLeft, TrendingUp, Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
+import { useAccount, useWatchContractEvent } from "wagmi";
+import { formatEther } from "viem";
+import ConnectButton from "../ConnectButton";
+import { useStakeContract } from "@/hooks/useStake";
+import { abi } from "@/constants/abi";
 
 interface MarketDetailProps {
   market: any;
@@ -10,33 +15,67 @@ interface MarketDetailProps {
   onBack: () => void;
 }
 
+import { contractAddress } from "@/constants";
+
+const CONTRACT_ADDRESS = contractAddress as `0x${string}`;
+
 export default function MarketDetail({ market, marketId, onBack }: MarketDetailProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<"yes" | "no">("yes");
-  const [stakeAmount, setStakeAmount] = useState<string>("100");
+  const [stakeAmount, setStakeAmount] = useState<string>("5");
   const [isStaking, setIsStaking] = useState(false);
+  const { isConnected, address } = useAccount();
+  const { placeStake } = useStakeContract();
 
-  // Mock market data (in real app, fetch based on marketId)
-  // const market = {
-  //   id: marketId,
-  //   title: "Will BlockDAG mainnet launch in Q2 2024?",
-  //   description:
-  //     'This market resolves to "Yes" if BlockDAG officially launches their mainnet before July 1st, 2024. The launch must be announced by official BlockDAG channels and be accessible to the public.',
-  //   category: "BlockDAG",
-  //   yesCount: 89,
-  //   totalVolume: "523K",
-  //   participants: 892,
-  //   endsAt: "Jun 30, 2024",
-  //   trending: true,
-  //   yesPrice: 0.89,
-  //   noPrice: 0.11,
-  //   liquidity: "1.2M",
-  // };
+  // Listen for StakePlaced events
+  useWatchContractEvent({
+    address: CONTRACT_ADDRESS,
+    abi: abi,
+    eventName: "StakePlaced",
+    onLogs: (logs) => {
+      logs.forEach((log) => {
+        const { user, choice, amount, userId, marketId, success } = (log as any).args;
+        console.log(
+          `Stake: User ${user}, Choice ${choice ? "Yes" : "No"}, Amount ${formatEther(
+            amount
+          )} BDAG, UserId ${userId}, MarketId ${marketId}, Success ${success}`
+        );
+        if (success) {
+          // Call API on success (commented for now)
+          // fetch('/api/stake-success', {
+          //   method: 'POST',
+          //   body: JSON.stringify({ user, choice, amount: formatEther(amount), userId, marketId }),
+          //   headers: { 'Content-Type': 'application/json' },
+          // });
+          alert(
+            `Stake placed: ${formatEther(amount)} BDAG on ${
+              choice ? "Yes" : "No"
+            } for market ${marketId}`
+          );
+        }
+      });
+    },
+  });
 
   const handleStake = async () => {
+    if (!address) {
+      console.error("No wallet connected");
+      return;
+    }
     setIsStaking(true);
-    setTimeout(() => {
+    try {
+      const tx = await placeStake({
+        choice: selectedOutcome === "yes",
+        amount: stakeAmount,
+        userId: address,
+        marketId: marketId,
+        minAmount: market.min_stake,
+      });
+      console.log("Stake successful, tx:", tx);
+    } catch (error) {
+      console.error("Stake failed:", error);
+    } finally {
       setIsStaking(false);
-    }, 2000);
+    }
   };
 
   const potentialReturn =
@@ -115,11 +154,9 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
-                <div className="text-gray-400 dark:text-white/60 text-xs sm:text-sm mb-1">
-                  Ends
-                </div>
+                <div className="text-gray-400 dark:text-white/60 text-xs sm:text-sm mb-1">Ends</div>
                 <div className="text-base sm:text-lg font-semibold text-black dark:text-white">
-                  {market.end_date}
+                  {market.end_date ? new Date(market.end_date).toLocaleString() : "N/A"}
                 </div>
               </div>
             </div>
@@ -149,20 +186,14 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
 
             {/* <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="text-center p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
-                <div className="text-green-400 font-semibold text-sm sm:text-base">
-                  YES Price
-                </div>
+                <div className="text-green-400 font-semibold text-sm sm:text-base">YES Price</div>
                 <div className="text-lg sm:text-2xl font-bold text-green-400">
                   ${market.yesPrice}
                 </div>
               </div>
               <div className="text-center p-3 sm:p-4 bg-red-500/10 border border-red-500/20 rounded-xl">
-                <div className="text-red-400 font-semibold text-sm sm:text-base">
-                  NO Price
-                </div>
-                <div className="text-lg sm:text-2xl font-bold text-red-400">
-                  ${market.noPrice}
-                </div>
+                <div className="text-red-400 font-semibold text-sm sm:text-base">NO Price</div>
+                <div className="text-lg sm:text-2xl font-bold text-red-400">${market.noPrice}</div>
               </div>
             </div> */}
           </Card>
@@ -188,9 +219,7 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
             <button
               onClick={() => setSelectedOutcome("no")}
               className={`flex-1 py-2 sm:py-3 rounded-xl font-semibold transition-colors ${
-                selectedOutcome === "no"
-                  ? "bg-red-500 text-white"
-                  : "bg-red-500/10 text-red-400"
+                selectedOutcome === "no" ? "bg-red-500 text-white" : "bg-red-500/10 text-red-400"
               }`}
             >
               NO
@@ -227,18 +256,22 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
             <div className="flex justify-between text-sm sm:text-base text-gray-400">
               <span>Potential Return</span>
               <span className="font-semibold text-white">
-                ${potentialReturn}
+                ${!potentialReturn || potentialReturn === "NaN" ? "0.00" : potentialReturn}
               </span>
             </div>
           </div>
 
-          <button
-            onClick={handleStake}
-            disabled={isStaking}
-            className="w-full py-2 sm:py-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
-          >
-            {isStaking ? "Placing Stake..." : "Confirm Stake"}
-          </button>
+          {!isConnected ? (
+            <ConnectButton />
+          ) : (
+            <button
+              onClick={handleStake}
+              disabled={isStaking}
+              className="w-full py-2 sm:py-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
+            >
+              {isStaking ? "Placing Stake..." : "Confirm Stake"}
+            </button>
+          )}
         </Card>
       </div>
     </div>
