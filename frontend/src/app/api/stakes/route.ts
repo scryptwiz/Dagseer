@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { supabase } from "@/lib/supabase";
-import { verifyToken } from "@/lib/auth";
+// import { verifyToken } from "@/lib/auth";
 
 export async function POST(req: Request) {
   try {
@@ -133,23 +133,23 @@ export async function GET(req: Request) {
 
 export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
-    const authHeader = req.headers.get("authorization");
-    if (!authHeader) {
-      return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
-    }
+    // const authHeader = req.headers.get("authorization");
+    // if (!authHeader) {
+    //   return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
+    // }
 
-    if (!authHeader.startsWith("Bearer ")) {
-      return NextResponse.json(
-        { success: false, message: "Invalid authentication" },
-        { status: 401 }
-      );
-    }
+    // if (!authHeader.startsWith("Bearer ")) {
+    //   return NextResponse.json(
+    //     { success: false, message: "Invalid authentication" },
+    //     { status: 401 }
+    //   );
+    // }
 
-    const token = authHeader.split(" ")[1];
-    const decoded = verifyToken(token);
-    if (!decoded) {
-      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 403 });
-    }
+    // const token = authHeader.split(" ")[1];
+    // const decoded = verifyToken(token);
+    // if (!decoded) {
+    //   return NextResponse.json({ success: false, message: "Invalid token" }, { status: 403 });
+    // }
 
     const body = await req.json();
     const { winningChoice } = body; // "yes" or "no"
