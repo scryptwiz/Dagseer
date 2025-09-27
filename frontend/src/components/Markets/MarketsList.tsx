@@ -7,13 +7,18 @@ interface CategoryProps {
   name: string;
 }
 
+interface StatsProps {
+  yesCount: number;
+  noCount: number;
+  totalAmount: number;
+  totalStakers: number;
+}
+
 interface ApiMarket {
   id: string;
   title: string;
   category: CategoryProps;
-  yesPercentage: number;
-  totalVolume: string;
-  participants: number;
+  stats: StatsProps;
   end_date: string;
   trending: boolean;
 }
@@ -41,9 +46,11 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
           id: m.id,
           title: m.title,
           category: m.category,
-          yesPercentage: Math.floor(Math.random() * 100),
-          totalVolume: `${Math.floor(Math.random() * 1000)}K`,
-          participants: Math.floor(Math.random() * 2000),
+          stats: m.stats,
+          // yesCount: m.stats.yesCount,
+          // noCount: m.stats.noCount,
+          // totalAmount: m.stats.totalAmount,
+          // totalStakers: m.stats.totalStakers,
           end_date: new Date(m.end_date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
@@ -139,16 +146,16 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="mb-4">
                   <div className="flex justify-between items-center mb-2 text-xs sm:text-sm">
                     <span className="text-green-400 font-semibold">
-                      YES {market.yesPercentage}%
+                      YES {market.stats.yesCount}%
                     </span>
                     <span className="text-red-400 font-semibold">
-                      NO {100 - market.yesPercentage}%
+                      NO {market.stats.noCount}%
                     </span>
                   </div>
                   <div className="h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 ease-out"
-                      style={{ width: `${market.yesPercentage}%` }}
+                      style={{ width: `${market.stats.yesCount}%` }}
                     ></div>
                   </div>
                 </div>
@@ -159,10 +166,10 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-1 text-gray-400" />
                       <span className="text-gray-400">
-                        {market.participants.toLocaleString()}
+                        {market.stats.totalStakers}
                       </span>
                     </div>
-                    <div className="text-gray-400">${market.totalVolume}</div>
+                    <div className="text-gray-400">${market.stats.totalAmount}</div>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1 text-gray-400" />
@@ -217,9 +224,9 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   <div className="flex flex-wrap items-center gap-4 text-white/60 text-xs sm:text-sm">
                     <div className="flex items-center text-gray-400">
                       <Users className="w-4 h-4 mr-1" />
-                      <span>{market.participants.toLocaleString()}</span>
+                      <span>{market.stats.totalStakers}</span>
                     </div>
-                    <div>${market.totalVolume}</div>
+                    <div>${market.stats.totalAmount}</div>
                     <div className="flex items-center text-gray-400">
                       <Clock className="w-4 h-4 mr-1" />
                       <span>{market.end_date}</span>
@@ -231,7 +238,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="flex items-center justify-between sm:justify-end gap-6">
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-green-400">
-                      {market.yesPercentage}%
+                      {market.stats.yesCount}%
                     </div>
                     <div className="text-xs text-gray-400 dark:text-white/60 ">
                       YES
@@ -239,7 +246,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   </div>
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-red-400">
-                      {100 - market.yesPercentage}%
+                      {market.stats.noCount}%
                     </div>
                     <div className="text-xs text-gray-400 dark:text-white/60">
                       NO
