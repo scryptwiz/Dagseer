@@ -168,7 +168,7 @@ function HowItWorks() {
   );
 }
 
-export function TrendingMarket() {
+function TrendingMarket() {
   return (
     <section className="py-20 flex justify-center items-center flex-col gap-8">
       <div className="container mx-auto px-2">
