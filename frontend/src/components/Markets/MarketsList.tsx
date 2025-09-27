@@ -2,30 +2,20 @@
 import React, { useEffect, useState } from "react";
 import { TrendingUp, Clock, Users, ArrowRight } from "lucide-react";
 
-interface Market {
+interface CategoryProps {
   id: string;
-  title: string;
-  category: string;
-  yesPercentage: number;
-  totalVolume: string;
-  participants: number;
-  endsAt: string;
-  trending: boolean;
+  name: string;
 }
 
 interface ApiMarket {
   id: string;
   title: string;
-  description: string;
-  category_id: string;
-  start_date: string;
+  category: CategoryProps;
+  yesPercentage: number
+  totalVolume: string
+  participants: number
   end_date: string;
-  is_active: boolean;
   trending: boolean;
-  min_stake: string;
-  max_stake: string;
-  created_at: string;
-  updated_at: string;
 }
 
 interface MarketsListProps {
@@ -33,7 +23,7 @@ interface MarketsListProps {
 }
 
 export default function MarketsList({ onSelectMarket }: MarketsListProps) {
-  const [markets, setMarkets] = useState<Market[]>([]);
+  const [markets, setMarkets] = useState<ApiMarket[]>([]);
   const [loading, setLoading] = useState(true);
 
   useEffect(() => {
@@ -47,14 +37,14 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
           ? result
           : result.data;
 
-        const formattedMarkets: Market[] = apiMarkets.map((m) => ({
+        const formattedMarkets: ApiMarket[] = apiMarkets.map((m) => ({
           id: m.id,
           title: m.title,
-          category: m.category_id,
+          category: m.category,
           yesPercentage: Math.floor(Math.random() * 100),
           totalVolume: `${Math.floor(Math.random() * 1000)}K`,
           participants: Math.floor(Math.random() * 2000),
-          endsAt: new Date(m.end_date).toLocaleDateString("en-US", {
+          end_date: new Date(m.end_date).toLocaleDateString("en-US", {
             month: "short",
             day: "numeric",
             year: "numeric",
@@ -127,10 +117,10 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 <div className="flex flex-wrap items-start justify-between mb-4 gap-2">
                   <div
                     className={`px-3 py-1 rounded-full text-xs font-semibold bg-gradient-to-r ${getCategoryColor(
-                      market.category
+                      market.category.name
                     )} text-white`}
                   >
-                    {market.category}
+                    {market.category.name}
                   </div>
                   <div className="flex items-center text-orange-400">
                     <TrendingUp className="w-4 h-4 mr-1" />
@@ -174,7 +164,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1 text-gray-400" />
-                    <span className="text-gray-400">{market.endsAt}</span>
+                    <span className="text-gray-400">{market.end_date}</span>
                   </div>
                 </div>
 
@@ -207,10 +197,10 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   <div className="flex flex-wrap items-center space-x-3 mb-2">
                     <div
                       className={`px-2 py-1 rounded text-xs font-medium bg-gradient-to-r ${getCategoryColor(
-                        market.category
+                        market.category.name
                       )} text-white`}
                     >
-                      {market.category}
+                      {market.category.name}
                     </div>
                     {market.trending && (
                       <div className="flex items-center text-orange-400 text-xs">
@@ -230,7 +220,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                     <div>${market.totalVolume}</div>
                     <div className="flex items-center text-gray-400">
                       <Clock className="w-4 h-4 mr-1" />
-                      <span>{market.endsAt}</span>
+                      <span>{market.end_date}</span>
                     </div>
                   </div>
                 </div>
