@@ -2,16 +2,23 @@ import type { Metadata } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { Providers } from "./providers";
-import { ThemeToggle } from "@/components/theme-toggle";
+import { Header } from "@/components/layouts/header";
 
-const inter = Inter({ subsets: ["latin"] });
+const inter = Inter({
+  subsets: ["latin"],
+});
 
 export const metadata: Metadata = {
   title: "DAGSeer – Forecast the Future, On-Chain",
-  description: "DAGSeer makes it simple to forecast the future on-chain. Stake with confidence, say Yes or No, and earn Seer tokens by joining the winning side.",
+  description:
+    "DAGSeer makes it simple to forecast the future on-chain. Stake with confidence, say Yes or No, and earn Seer tokens by joining the winning side.",
   icons: [
     { rel: "icon", url: "/icon.svg", media: "(prefers-color-scheme: light)" },
-    { rel: "icon", url: "/icon-dark.svg", media: "(prefers-color-scheme: dark)" },
+    {
+      rel: "icon",
+      url: "/icon-dark.svg",
+      media: "(prefers-color-scheme: dark)",
+    },
   ],
   openGraph: {
     images: [
@@ -34,10 +41,11 @@ export default function RootLayout({
     <html lang="en">
       <body className={inter.className}>
         <Providers>
+          <Header />
           {children}
-          <div className="fixed bottom-5 right-5">
+          {/* <div className="fixed bottom-5 right-5">
             <ThemeToggle />
-          </div>
+          </div> */}
         </Providers>
       </body>
     </html>
