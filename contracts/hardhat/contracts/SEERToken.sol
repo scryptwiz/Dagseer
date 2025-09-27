@@ -15,4 +15,9 @@ contract DAGSToken is ERC20 {
         require(msg.sender == owner, "Only owner");
         _mint(to, amount);
     }
+
+    // Faucet for testing: mint 100 tokens to caller (remove in production)
+    function faucet() external {
+        _mint(msg.sender, 100 * 10 ** decimals());
+    }
 }

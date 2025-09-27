@@ -6,6 +6,17 @@ import { Card } from "@/components/ui/card";
 import { useAccount } from "wagmi";
 import ConnectButton from "../ConnectButton";
 import { useStakeContract } from "@/hooks/useStake";
+import {
+  Dialog,
+  DialogContent,
+  DialogDescription,
+  DialogHeader,
+  DialogTitle,
+  DialogTrigger,
+} from "@/components/ui/dialog";
+import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { Label } from "@/components/ui/label";
 
 interface MarketDetailProps {
   market: any;
@@ -17,31 +28,143 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
   const [selectedOutcome, setSelectedOutcome] = useState<"yes" | "no">("yes");
   const [stakeAmount, setStakeAmount] = useState<string>("5");
   const [isStaking, setIsStaking] = useState(false);
+  const [isCheckingUser, setIsCheckingUser] = useState(false);
+  const [userModalOpen, setUserModalOpen] = useState(false);
+  const [userEmail, setUserEmail] = useState("");
+  const [isCreatingUser, setIsCreatingUser] = useState(false);
   const { isConnected, address } = useAccount();
   const { placeStake } = useStakeContract();
+
+  const checkUserExists = async (
+    walletAddress: string
+  ): Promise<{ exists: boolean; id?: string }> => {
+    try {
+      const response = await fetch(`/api/users?address=${walletAddress}`);
+      const data = await response.json();
+      if (data.success) {
+        return { exists: true, id: data.data.id };
+      } else {
+        return { exists: false };
+      }
+    } catch (error) {
+      console.error("Error checking user:", error);
+      return { exists: false };
+    }
+  };
+
+  const createUser = async (
+    email: string,
+    walletAddress: string
+  ): Promise<{ success: boolean; id?: string }> => {
+    try {
+      const response = await fetch("/api/users", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ email, wallet_address: walletAddress }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        return { success: true, id: data.data.id };
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  };
+
+  const saveStake = async (
+    user_id: string,
+    market_id: string,
+    choice: string,
+    amount: number
+  ): Promise<{ success: boolean; message?: string }> => {
+    try {
+      const response = await fetch("/api/stakes", {
+        method: "POST",
+        headers: {
+          "Content-Type": "application/json",
+        },
+        body: JSON.stringify({ user_id, market_id, amount, choice }),
+      });
+      const data = await response.json();
+      if (data.success) {
+        return { success: true, message: "Stake created successfully" };
+      } else {
+        throw new Error(data.message);
+      }
+    } catch (error) {
+      console.error("Error creating user:", error);
+      throw error;
+    }
+  };
 
   const handleStake = async () => {
     if (!address) {
       console.error("No wallet connected");
       return;
     }
+    setIsCheckingUser(true);
+    try {
+      // Check if user exists
+      const userCheck = await checkUserExists(address);
+      setIsCheckingUser(false);
+
+      if (!userCheck.exists) {
+        // Open modal to register user
+        setUserModalOpen(true);
+        return;
+      }
+
+      // Proceed to stake
+      await performStake(userCheck.id!);
+    } catch (error) {
+      setIsCheckingUser(false);
+      console.error("Error during user check:", error);
+    }
+  };
+
+  const performStake = async (userId: string) => {
     setIsStaking(true);
     try {
       // TODO: Syntax Uncomment this check if you want to enforce wallet connection
-      // if (!isConnected || !address) throw new Error("Wallet not connected");
+      if (!isConnected || !address) throw new Error("Wallet not connected");
 
       const tx = await placeStake({
         choice: selectedOutcome === "yes",
         amount: stakeAmount,
-        userId: address,
+        userId: userId,
         marketId: marketId,
         minAmount: market.min_stake,
       });
       console.log("Stake successful, tx:", tx);
+
+      // TODO: GET INFO
+      saveStake(userId, marketId, selectedOutcome, parseFloat(stakeAmount));
     } catch (error) {
       console.error("Stake failed:", error);
     } finally {
       setIsStaking(false);
+    }
+  };
+
+  const handleCreateUser = async () => {
+    if (!userEmail || !address) return;
+    setIsCreatingUser(true);
+    try {
+      const result = await createUser(userEmail, address);
+      setUserModalOpen(false);
+      setUserEmail("");
+      // Now proceed to stake with the new user id
+      await performStake(result.id!);
+    } catch (error) {
+      console.error("Failed to create user:", error);
+      // TODO: Show error message
+    } finally {
+      setIsCreatingUser(false);
     }
   };
 
@@ -137,17 +260,23 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
 
             <div className="flex justify-between items-center mb-3 sm:mb-4">
               <span className="text-green-400 font-semibold text-base sm:text-lg">
-                YES {market.stats.yesCount}%
+                YES {market.stats.yesCount}
               </span>
               <span className="text-red-400 font-semibold text-base sm:text-lg">
-                NO {market.stats.noCount}%
+                NO {market.stats.noCount}
               </span>
             </div>
 
             <div className="h-3 sm:h-4 bg-white/10 rounded-full overflow-hidden mb-4 sm:mb-6">
               <div
                 className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 ease-out"
-                style={{ width: `${market.stats.yesCount}%` }}
+                style={{
+                  width: `${
+                    market.stats.yesCount > 0
+                      ? (market.stats.yesCount / market.stats.totalStakers) * 100
+                      : 0
+                  }%`,
+                }}
               ></div>
             </div>
 
@@ -233,14 +362,51 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
           ) : (
             <button
               onClick={handleStake}
-              disabled={isStaking}
+              disabled={isStaking || isCheckingUser}
               className="w-full py-2 sm:py-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {isStaking ? "Placing Stake..." : "Confirm Stake"}
+              {isCheckingUser
+                ? "Checking User..."
+                : isStaking
+                ? "Placing Stake..."
+                : "Confirm Stake"}
             </button>
           )}
         </Card>
       </div>
+
+      {/* User Registration Modal */}
+      <Dialog open={userModalOpen} onOpenChange={setUserModalOpen}>
+        <DialogContent>
+          <DialogHeader>
+            <DialogTitle>Complete Your Registration</DialogTitle>
+            <DialogDescription>Please provide your email to continue staking.</DialogDescription>
+          </DialogHeader>
+          <div className="space-y-4">
+            <div>
+              <Label htmlFor="email">Email</Label>
+              <Input
+                id="email"
+                type="email"
+                value={userEmail}
+                onChange={(e: any) => setUserEmail(e.target.value)}
+                placeholder="Enter your email"
+              />
+            </div>
+            {/* <div>
+              <Label htmlFor="address">Wallet Address</Label>
+              <Input id="address" value={address || ""} readOnly className="bg-gray-100" />
+            </div> */}
+            <Button
+              onClick={handleCreateUser}
+              disabled={isCreatingUser || !userEmail}
+              className="w-full"
+            >
+              {isCreatingUser ? "Creating Account..." : "Create Account & Stake"}
+            </Button>
+          </div>
+        </DialogContent>
+      </Dialog>
     </div>
   );
 }
