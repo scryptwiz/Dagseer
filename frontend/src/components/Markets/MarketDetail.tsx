@@ -1,6 +1,6 @@
 "use client";
 
-import React, { useState } from "react";
+import React, { useState, useEffect } from "react";
 import { ArrowLeft, TrendingUp, Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 import { useAccount } from "wagmi";
@@ -16,6 +16,8 @@ import {
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
+import { toast } from "sonner";
+import { useRouter } from "next/navigation";
 
 interface MarketDetailProps {
   market: any;
@@ -24,6 +26,7 @@ interface MarketDetailProps {
 }
 
 export default function MarketDetail({ market, marketId, onBack }: MarketDetailProps) {
+  const router = useRouter();
   const [selectedOutcome, setSelectedOutcome] = useState<"yes" | "no">("yes");
   const [stakeAmount, setStakeAmount] = useState<string>("5");
   const [isStaking, setIsStaking] = useState(false);
@@ -33,6 +36,36 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
   const [isCreatingUser, setIsCreatingUser] = useState(false);
   const { isConnected, address } = useAccount();
   const { placeStake } = useStakeContract();
+  const [hasStaked, setHasStaked] = useState<boolean>(false);
+  const [existingStake, setExistingStake] = useState<{
+    id: string;
+    amount: number;
+    choice: string;
+    status: string;
+    created_at: string;
+  } | null>(null);
+  const [loadingStakeStatus, setLoadingStakeStatus] = useState<boolean>(false);
+
+  // Fetch whether user already staked in this market
+  useEffect(() => {
+    const fetchStakeStatus = async () => {
+      if (!address) return;
+      setLoadingStakeStatus(true);
+      try {
+        const res = await fetch(`/api/stakes/${marketId}?address=${address}`);
+        const json = await res.json();
+        if (json.success) {
+          setHasStaked(Boolean(json.hasStaked));
+          setExistingStake(json.stake);
+        }
+      } catch {
+        // silent fail; optionally add toast or logging
+      } finally {
+        setLoadingStakeStatus(false);
+      }
+    };
+    fetchStakeStatus();
+  }, [address, marketId]);
 
   const checkUserExists = async (
     walletAddress: string
@@ -91,12 +124,16 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
       });
       const data = await response.json();
       if (data.success) {
+        toast.success("Stake created successfully!");
+        router.push("/my-positions");
         return { success: true, message: "Stake created successfully" };
       } else {
+        toast.error(data.message || "Failed to create stake.");
         throw new Error(data.message);
       }
     } catch (error) {
       console.error("Error creating user:", error);
+      toast.error("Failed to create stake.");
       throw error;
     }
   };
@@ -142,7 +179,28 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
       console.log("Stake successful, tx:", tx);
 
       // TODO: GET INFO
-      saveStake(userId, marketId, selectedOutcome, parseFloat(stakeAmount));
+      await saveStake(userId, marketId, selectedOutcome, parseFloat(stakeAmount));
+      // After saving, set local hasStaked state
+      setHasStaked(true);
+      const derivedId: string = ((): string => {
+        if (typeof tx === "string") return tx; // if hook returns tx hash directly
+        if (
+          typeof tx === "object" &&
+          tx &&
+          "hash" in tx &&
+          typeof (tx as Record<string, unknown>).hash === "string"
+        ) {
+          return (tx as Record<string, string>).hash;
+        }
+        return "temp";
+      })();
+      setExistingStake({
+        id: derivedId,
+        amount: parseFloat(stakeAmount),
+        choice: selectedOutcome,
+        status: "pending",
+        created_at: new Date().toISOString(),
+      });
     } catch (error) {
       console.error("Stake failed:", error);
     } finally {
@@ -167,10 +225,9 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
     }
   };
 
-  const potentialReturn =
-    selectedOutcome === "yes"
-      ? (parseFloat(stakeAmount) / market.yesPrice).toFixed(2)
-      : (parseFloat(stakeAmount) / market.noPrice).toFixed(2);
+  // const potentialReturn = selectedOutcome === "yes"
+  //   ? (parseFloat(stakeAmount) / market.yesPrice).toFixed(2)
+  //   : (parseFloat(stakeAmount) / market.noPrice).toFixed(2); // reserved for future UI use
 
   const adjustAmount = (delta: number) => {
     const current = parseFloat(stakeAmount) || 0;
@@ -223,7 +280,7 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
                   Total Volume
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-black dark:text-white">
-                  ${market.stats.totalAmount}
+                  BDAG {market.stats.totalAmount}
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
@@ -239,7 +296,7 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
                   Liquidity
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-black dark:text-white">
-                  ${market.totalAmount}
+                  BDAG {market.totalAmount}
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
@@ -323,7 +380,7 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
 
           <div className="mb-4 sm:mb-6">
             <label className="block text-sm sm:text-base text-gray-400 mb-2">
-              Stake Amount ($)
+              Stake Amount (BDAG)
             </label>
             <div className="flex items-center gap-2 sm:gap-3 w-full">
               <button
@@ -347,24 +404,33 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
             </div>
           </div>
 
-          <div className="mb-4 sm:mb-6">
-            <div className="flex justify-between text-sm sm:text-base text-gray-400">
-              <span>Potential Return</span>
-              <span className="font-semibold text-white">
-                ${!potentialReturn || potentialReturn === "NaN" ? "0.00" : potentialReturn}
-              </span>
+          {!isConnected && <ConnectButton />}
+          {isConnected && hasStaked && (
+            <div className="space-y-3 w-full">
+              <div className="text-sm text-green-400 font-medium">You have already staked</div>
+              {existingStake && (
+                <div className="text-xs text-white/70">
+                  Choice: <span className="font-semibold capitalize">{existingStake.choice}</span> •
+                  Amount: {existingStake.amount} BDAG • Status: {existingStake.status}
+                </div>
+              )}
+              <button
+                disabled
+                className="w-full py-2 sm:py-3 bg-gray-500/40 cursor-not-allowed rounded-xl font-semibold text-white opacity-70"
+              >
+                Already Staked
+              </button>
             </div>
-          </div>
-
-          {!isConnected ? (
-            <ConnectButton />
-          ) : (
+          )}
+          {isConnected && !hasStaked && (
             <button
               onClick={handleStake}
-              disabled={isStaking || isCheckingUser}
+              disabled={isStaking || isCheckingUser || loadingStakeStatus}
               className="w-full py-2 sm:py-3 bg-gradient-to-r from-cyan-400 to-blue-500 rounded-xl font-semibold text-white hover:opacity-90 transition-opacity disabled:opacity-50"
             >
-              {isCheckingUser
+              {loadingStakeStatus
+                ? "Loading..."
+                : isCheckingUser
                 ? "Checking User..."
                 : isStaking
                 ? "Placing Stake..."
@@ -388,7 +454,7 @@ export default function MarketDetail({ market, marketId, onBack }: MarketDetailP
                 id="email"
                 type="email"
                 value={userEmail}
-                onChange={(e: any) => setUserEmail(e.target.value)}
+                onChange={(e: React.ChangeEvent<HTMLInputElement>) => setUserEmail(e.target.value)}
                 placeholder="Enter your email"
               />
             </div>

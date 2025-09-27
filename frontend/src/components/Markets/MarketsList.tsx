@@ -167,7 +167,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                       <Users className="w-4 h-4 mr-1 text-gray-400" />
                       <span className="text-gray-400">{market.stats.totalStakers}</span>
                     </div>
-                    <div className="text-gray-400">${market.stats.totalAmount}</div>
+                    <div className="text-gray-400">BDAG {market.stats.totalAmount}</div>
                   </div>
                   <div className="flex items-center">
                     <Clock className="w-4 h-4 mr-1 text-gray-400" />
@@ -220,7 +220,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                       <Users className="w-4 h-4 mr-1" />
                       <span>{market.stats.totalStakers}</span>
                     </div>
-                    <div>${market.stats.totalAmount}</div>
+                    <div>BDAG {market.stats.totalAmount}</div>
                     <div className="flex items-center text-gray-400">
                       <Clock className="w-4 h-4 mr-1" />
                       <span>{market.end_date}</span>
