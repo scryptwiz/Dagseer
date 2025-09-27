@@ -5,31 +5,32 @@ import { ArrowLeft, TrendingUp, Plus, Minus } from "lucide-react";
 import { Card } from "@/components/ui/card";
 
 interface MarketDetailProps {
+  market: any;
   marketId: string;
   onBack: () => void;
 }
 
-export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
+export default function MarketDetail({ market, marketId, onBack }: MarketDetailProps) {
   const [selectedOutcome, setSelectedOutcome] = useState<"yes" | "no">("yes");
   const [stakeAmount, setStakeAmount] = useState<string>("100");
   const [isStaking, setIsStaking] = useState(false);
 
   // Mock market data (in real app, fetch based on marketId)
-  const market = {
-    id: marketId,
-    title: "Will BlockDAG mainnet launch in Q2 2024?",
-    description:
-      'This market resolves to "Yes" if BlockDAG officially launches their mainnet before July 1st, 2024. The launch must be announced by official BlockDAG channels and be accessible to the public.',
-    category: "BlockDAG",
-    yesPercentage: 89,
-    totalVolume: "523K",
-    participants: 892,
-    endsAt: "Jun 30, 2024",
-    trending: true,
-    yesPrice: 0.89,
-    noPrice: 0.11,
-    liquidity: "1.2M",
-  };
+  // const market = {
+  //   id: marketId,
+  //   title: "Will BlockDAG mainnet launch in Q2 2024?",
+  //   description:
+  //     'This market resolves to "Yes" if BlockDAG officially launches their mainnet before July 1st, 2024. The launch must be announced by official BlockDAG channels and be accessible to the public.',
+  //   category: "BlockDAG",
+  //   yesCount: 89,
+  //   totalVolume: "523K",
+  //   participants: 892,
+  //   endsAt: "Jun 30, 2024",
+  //   trending: true,
+  //   yesPrice: 0.89,
+  //   noPrice: 0.11,
+  //   liquidity: "1.2M",
+  // };
 
   const handleStake = async () => {
     setIsStaking(true);
@@ -62,7 +63,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
         </button>
 
         <div className="px-3 py-1 rounded-full text-xs sm:text-sm font-semibold bg-gradient-to-r from-cyan-400 to-blue-500 text-white">
-          {market.category}
+          {market.category.name}
         </div>
 
         {market.trending && (
@@ -94,7 +95,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                   Total Volume
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-black dark:text-white">
-                  ${market.totalVolume}
+                  ${market.stats.totalAmount}
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
@@ -102,7 +103,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                   Participants
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-black dark:text-white">
-                  {market.participants.toLocaleString()}
+                  {market.stats.totalStakers}
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
@@ -110,7 +111,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                   Liquidity
                 </div>
                 <div className="text-lg sm:text-2xl font-bold text-black dark:text-white">
-                  ${market.liquidity}
+                  ${market.totalAmount}
                 </div>
               </div>
               <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-xl p-3 sm:p-4">
@@ -118,7 +119,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                   Ends
                 </div>
                 <div className="text-base sm:text-lg font-semibold text-black dark:text-white">
-                  {market.endsAt}
+                  {market.end_date}
                 </div>
               </div>
             </div>
@@ -132,21 +133,21 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
 
             <div className="flex justify-between items-center mb-3 sm:mb-4">
               <span className="text-green-400 font-semibold text-base sm:text-lg">
-                YES {market.yesPercentage}%
+                YES {market.stats.yesCount}%
               </span>
               <span className="text-red-400 font-semibold text-base sm:text-lg">
-                NO {100 - market.yesPercentage}%
+                NO {market.stats.noCount}%
               </span>
             </div>
 
             <div className="h-3 sm:h-4 bg-white/10 rounded-full overflow-hidden mb-4 sm:mb-6">
               <div
                 className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 ease-out"
-                style={{ width: `${market.yesPercentage}%` }}
+                style={{ width: `${market.stats.yesCount}%` }}
               ></div>
             </div>
 
-            <div className="grid grid-cols-2 gap-3 sm:gap-4">
+            {/* <div className="grid grid-cols-2 gap-3 sm:gap-4">
               <div className="text-center p-3 sm:p-4 bg-green-500/10 border border-green-500/20 rounded-xl">
                 <div className="text-green-400 font-semibold text-sm sm:text-base">
                   YES Price
@@ -163,7 +164,7 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
                   ${market.noPrice}
                 </div>
               </div>
-            </div>
+            </div> */}
           </Card>
         </div>
 
@@ -196,32 +197,31 @@ export default function MarketDetail({ marketId, onBack }: MarketDetailProps) {
             </button>
           </div>
 
-        <div className="mb-4 sm:mb-6">
-  <label className="block text-sm sm:text-base text-gray-400 mb-2">
-    Stake Amount ($)
-  </label>
-  <div className="flex items-center gap-2 sm:gap-3 w-full">
-    <button
-      onClick={() => adjustAmount(-10)}
-      className="p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-    >
-      <Minus className="w-4 h-4" />
-    </button>
-    <input
-      type="number"
-      value={stakeAmount}
-      onChange={(e) => setStakeAmount(e.target.value)}
-      className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-black/20 border border-white/10 text-white text-center focus:outline-none focus:ring-2 focus:ring-cyan-500"
-    />
-    <button
-      onClick={() => adjustAmount(10)}
-      className="p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
-    >
-      <Plus className="w-4 h-4" />
-    </button>
-  </div>
-</div>
-
+          <div className="mb-4 sm:mb-6">
+            <label className="block text-sm sm:text-base text-gray-400 mb-2">
+              Stake Amount ($)
+            </label>
+            <div className="flex items-center gap-2 sm:gap-3 w-full">
+              <button
+                onClick={() => adjustAmount(-10)}
+                className="p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <Minus className="w-4 h-4" />
+              </button>
+              <input
+                type="number"
+                value={stakeAmount}
+                onChange={(e) => setStakeAmount(e.target.value)}
+                className="w-full px-3 sm:px-4 py-2 sm:py-3 rounded-lg bg-black/20 border border-white/10 text-white text-center focus:outline-none focus:ring-2 focus:ring-cyan-500"
+              />
+              <button
+                onClick={() => adjustAmount(10)}
+                className="p-2 sm:p-3 rounded-lg bg-white/5 hover:bg-white/10 transition-colors"
+              >
+                <Plus className="w-4 h-4" />
+              </button>
+            </div>
+          </div>
 
           <div className="mb-4 sm:mb-6">
             <div className="flex justify-between text-sm sm:text-base text-gray-400">
