@@ -1,4 +1,4 @@
-import React, { useState } from "react";
+import React, { useState, useEffect, useMemo } from "react";
 import {
   ArrowLeft,
   Trophy,
@@ -25,87 +25,108 @@ interface MyPositionsProps {
   onBack: () => void;
 }
 
-const mockPositions: Position[] = [
-  {
-    id: "1",
-    marketTitle: "Will BlockDAG mainnet launch in Q2 2024?",
-    outcome: "yes",
-    stakeAmount: 250,
-    currentValue: 285,
-    potentialPayout: 320,
-    status: "active",
-    marketEndDate: "Jun 30, 2024",
-    category: "BlockDAG",
-  },
-  {
-    id: "2",
-    marketTitle: "Will Bitcoin reach $100,000 by end of 2024?",
-    outcome: "yes",
-    stakeAmount: 150,
-    currentValue: 142,
-    potentialPayout: 200,
-    status: "active",
-    marketEndDate: "Dec 31, 2024",
-    category: "Crypto",
-  },
-  {
-    id: "3",
-    marketTitle: "Will Ethereum 2.0 staking APY drop below 3%?",
-    outcome: "no",
-    stakeAmount: 100,
-    currentValue: 124,
-    potentialPayout: 130,
-    status: "won",
-    marketEndDate: "Mar 15, 2024",
-    category: "DeFi",
-  },
-  {
-    id: "4",
-    marketTitle: "Will Tesla stock exceed $300 this quarter?",
-    outcome: "yes",
-    stakeAmount: 80,
-    currentValue: 0,
-    potentialPayout: 0,
-    status: "lost",
-    marketEndDate: "Mar 31, 2024",
-    category: "Stocks",
-  },
-];
+// Removed mockPositions; real data fetched from API
+
+import { useAccount } from "wagmi";
+
+interface RawStakeRecord {
+  id: string;
+  amount: number | string;
+  choice: "yes" | "no" | string;
+  status: string; // pending | won | lost
+  created_at: string;
+  user_id: string;
+  market_id: string;
+  markets?: {
+    title: string;
+    start_date: string;
+    end_date: string;
+    categories?: { id: string; name: string } | null;
+  } | null;
+}
 
 export default function MyPositions({ onBack }: MyPositionsProps) {
-  const [activeTab, setActiveTab] = useState<"all" | "active" | "settled">(
-    "all"
+  const [activeTab, setActiveTab] = useState<"all" | "active" | "settled">("all");
+  // const [claimingId, setClaimingId] = useState<string>(""); // reserved for future claim logic
+  const [positions, setPositions] = useState<Position[]>([]);
+  const [loading, setLoading] = useState<boolean>(false);
+  const [error, setError] = useState<string | null>(null);
+  const { address } = useAccount();
+
+  // Fetch stakes when wallet address changes
+  useEffect(() => {
+    const fetchStakes = async () => {
+      if (!address) return;
+      setLoading(true);
+      setError(null);
+      try {
+        // We can call stakes endpoint directly with wallet_address now
+        const res = await fetch(`/api/stakes?wallet_address=${address}`);
+        const json = await res.json();
+        if (!json.success) {
+          throw new Error(json.message || "Failed to fetch stakes");
+        }
+        const stakes: RawStakeRecord[] = json.stakes || [];
+        const mapped: Position[] = stakes.map((s) => ({
+          id: s.id,
+          marketTitle: s.markets?.title || "Unknown Market",
+          outcome: (s.choice?.toLowerCase() === "yes" ? "yes" : "no") as "yes" | "no",
+          stakeAmount: Number(s.amount) || 0,
+          // Placeholder logic for currentValue & potentialPayout; could be improved with pricing logic
+          currentValue: Number(s.amount) || 0,
+          potentialPayout:
+            s.status === "won"
+              ? Number(s.amount) * 2 // simplistic; adjust with real payout formula later
+              : Number(s.amount),
+          status: (["active", "won", "lost", "pending"].includes(s.status)
+            ? s.status
+            : "pending") as Position["status"],
+          marketEndDate: s.markets?.end_date
+            ? new Date(s.markets.end_date).toLocaleDateString()
+            : "N/A",
+          category: s.markets?.categories?.name || "General",
+        }));
+        setPositions(mapped);
+      } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : "Error fetching stakes";
+        setError(message);
+      } finally {
+        setLoading(false);
+      }
+    };
+    fetchStakes();
+  }, [address]);
+
+  const filteredPositions = useMemo(() => {
+    return positions.filter((position) => {
+      if (activeTab === "active")
+        return position.status === "active" || position.status === "pending"; // treat pending as active
+      if (activeTab === "settled") return ["won", "lost"].includes(position.status);
+      return true;
+    });
+  }, [positions, activeTab]);
+
+  const totalStaked = useMemo(
+    () => positions.reduce((sum, pos) => sum + pos.stakeAmount, 0),
+    [positions]
   );
-  const [claimingId, setClaimingId] = useState<string>("");
-
-  const filteredPositions = mockPositions.filter((position) => {
-    if (activeTab === "active") return position.status === "active";
-    if (activeTab === "settled")
-      return ["won", "lost"].includes(position.status);
-    return true;
-  });
-
-  const totalStaked = mockPositions.reduce(
-    (sum, pos) => sum + pos.stakeAmount,
-    0
+  const totalCurrentValue = useMemo(
+    () =>
+      positions
+        .filter((pos) => pos.status === "active" || pos.status === "pending")
+        .reduce((sum, pos) => sum + pos.currentValue, 0),
+    [positions]
   );
-  const totalCurrentValue = mockPositions
-    .filter((pos) => pos.status === "active")
-    .reduce((sum, pos) => sum + pos.currentValue, 0);
-  const totalWinnings = mockPositions
-    .filter((pos) => pos.status === "won")
-    .reduce((sum, pos) => sum + pos.potentialPayout, 0);
-  const unclaimedWinnings = mockPositions
-    .filter((pos) => pos.status === "won")
-    .reduce((sum, pos) => sum + pos.potentialPayout, 0);
+  const totalWinnings = useMemo(
+    () =>
+      positions
+        .filter((pos) => pos.status === "won")
+        .reduce((sum, pos) => sum + pos.potentialPayout, 0),
+    [positions]
+  );
+  const unclaimedWinnings = totalWinnings; // Placeholder; differentiate claimed vs unclaimed later
 
-  const handleClaim = async (positionId: string) => {
-    setClaimingId(positionId);
-    // Simulate claim transaction
-    setTimeout(() => {
-      setClaimingId("");
-    }, 2000);
-  };
+  // const handleClaim = async (positionId: string) => { /* implement claim later */ };
 
   const getStatusIcon = (status: string) => {
     switch (status) {
@@ -158,9 +179,7 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
         <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">
-                Total Staked
-              </div>
+              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Total Staked</div>
               <div className="text-2xl font-bold text-black dark:text-white">
                 {totalStaked} BDAG
               </div>
@@ -172,9 +191,7 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
         <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">
-                Current Value
-              </div>
+              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Current Value</div>
               <div className="text-2xl font-bold text-black dark:text-white">
                 {totalCurrentValue} BDAG
               </div>
@@ -186,12 +203,8 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
         <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">
-                Total Winnings
-              </div>
-              <div className="text-2xl font-bold text-green-400">
-                {totalWinnings} BDAG
-              </div>
+              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Total Winnings</div>
+              <div className="text-2xl font-bold text-green-400">{totalWinnings} BDAG</div>
             </div>
             <Trophy className="w-8 h-8 text-green-400" />
           </div>
@@ -200,12 +213,8 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
         <div className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6">
           <div className="flex items-center justify-between">
             <div>
-              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">
-                Unclaimed
-              </div>
-              <div className="text-2xl font-bold text-yellow-400">
-                {unclaimedWinnings} BDAG
-              </div>
+              <div className="text-gray-400 dark:text-white/60 text-sm mb-1">Unclaimed</div>
+              <div className="text-2xl font-bold text-yellow-400">{unclaimedWinnings} BDAG</div>
             </div>
             <div className="w-8 h-8 bg-gradient-to-r from-yellow-400 to-orange-500 rounded-full flex items-center justify-center">
               <DollarSign className="w-5 h-5 text-white" />
@@ -224,7 +233,7 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
           ].map((tab) => (
             <button
               key={tab.id}
-              onClick={() => setActiveTab(tab.id as any)}
+              onClick={() => setActiveTab(tab.id as "all" | "active" | "settled")}
               className={`px-4 py-2 rounded-lg font-medium transition-all ${
                 activeTab === tab.id
                   ? "bg-gradient-to-r from-cyan-500 to-purple-600 text-white"
@@ -258,122 +267,111 @@ export default function MyPositions({ onBack }: MyPositionsProps) {
 
       {/* Positions List */}
       <div className="space-y-4">
-        {filteredPositions.map((position) => (
-          <div
-            key={position.id}
-            className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all"
-          >
-            <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
-              <div className="flex-1">
-                <div className="flex flex-wrap items-center gap-3 mb-2">
-                  <div className="px-2 py-1 rounded text-xs font-medium bg-gradient-to-r from-cyan-400 to-purple-500 text-white">
-                    {position.category}
-                  </div>
-                  <div
-                    className={`flex items-center space-x-1 ${getStatusColor(
-                      position.status
-                    )}`}
-                  >
-                    {getStatusIcon(position.status)}
-                    <span className="text-sm font-medium capitalize">
-                      {position.status}
-                    </span>
-                  </div>
-                </div>
-
-                <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white mb-3">
-                  {position.marketTitle}
-                </h3>
-
-                <div className="flex flex-wrap gap-3 sm:gap-6 text-gray-400 dark:text-white/60">
-                  <div>
-                    <span className="text-sm">Outcome: </span>
-                    <span
-                      className={`font-semibold ${
-                        position.outcome === "yes"
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }`}
-                    >
-                      {position.outcome.toUpperCase()}
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm">Staked: </span>
-                    <span className="text-black dark:text-white font-medium">
-                      {position.stakeAmount} BDAG
-                    </span>
-                  </div>
-                  <div>
-                    <span className="text-sm">Ends: </span>
-                    <span className="text-black dark:text-white">
-                      {position.marketEndDate}
-                    </span>
-                  </div>
-                </div>
-              </div>
-
-              <div className="text-left sm:text-right">
-                {position.status === "active" && (
-                  <div className="mb-4">
-                    <div className="text-gray-400 dark:text-white/60 text-sm">
-                      Current Value
-                    </div>
-                    <div className="text-2xl font-bold text-black dark:text-white">
-                      {position.currentValue} BDAG
+        {loading && <div className="text-center py-12 text-white/60">Loading positions...</div>}
+        {error && !loading && <div className="text-center py-12 text-red-400">{error}</div>}
+        {!loading &&
+          !error &&
+          filteredPositions.map((position) => (
+            <div
+              key={position.id}
+              className="backdrop-blur-xl bg-white/5 border dark:border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all"
+            >
+              <div className="flex flex-col sm:flex-row sm:items-start justify-between gap-4">
+                <div className="flex-1">
+                  <div className="flex flex-wrap items-center gap-3 mb-2">
+                    <div className="px-2 py-1 rounded text-xs font-medium bg-gradient-to-r from-cyan-400 to-purple-500 text-white">
+                      {position.category}
                     </div>
                     <div
-                      className={`text-sm ${
-                        position.currentValue > position.stakeAmount
-                          ? "text-green-400"
-                          : "text-red-400"
-                      }`}
+                      className={`flex items-center space-x-1 ${getStatusColor(position.status)}`}
                     >
-                      {position.currentValue > position.stakeAmount ? "+" : ""}
-                      {(position.currentValue - position.stakeAmount).toFixed(
-                        0
-                      )}{" "}
-                      BDAG
+                      {getStatusIcon(position.status)}
+                      <span className="text-sm font-medium capitalize">{position.status}</span>
                     </div>
                   </div>
-                )}
 
-                {position.status === "won" && (
-                  <div className="mb-4">
-                    <div className="text-green-400 text-sm">Won</div>
-                    <div className="text-2xl font-bold text-green-400">
-                      {position.potentialPayout} BDAG
+                  <h3 className="text-lg sm:text-xl font-semibold text-black dark:text-white mb-3">
+                    {position.marketTitle}
+                  </h3>
+
+                  <div className="flex flex-wrap gap-3 sm:gap-6 text-gray-400 dark:text-white/60">
+                    <div>
+                      <span className="text-sm">Outcome: </span>
+                      <span
+                        className={`font-semibold ${
+                          position.outcome === "yes" ? "text-green-400" : "text-red-400"
+                        }`}
+                      >
+                        {position.outcome.toUpperCase()}
+                      </span>
                     </div>
-                    {/* <button
+                    <div>
+                      <span className="text-sm">Staked: </span>
+                      <span className="text-black dark:text-white font-medium">
+                        {position.stakeAmount} BDAG
+                      </span>
+                    </div>
+                    <div>
+                      <span className="text-sm">Ends: </span>
+                      <span className="text-black dark:text-white">{position.marketEndDate}</span>
+                    </div>
+                  </div>
+                </div>
+
+                <div className="text-left sm:text-right">
+                  {position.status === "active" && (
+                    <div className="mb-4">
+                      <div className="text-gray-400 dark:text-white/60 text-sm">Current Value</div>
+                      <div className="text-2xl font-bold text-black dark:text-white">
+                        {position.currentValue} BDAG
+                      </div>
+                      <div
+                        className={`text-sm ${
+                          position.currentValue > position.stakeAmount
+                            ? "text-green-400"
+                            : "text-red-400"
+                        }`}
+                      >
+                        {position.currentValue > position.stakeAmount ? "+" : ""}
+                        {(position.currentValue - position.stakeAmount).toFixed(0)} BDAG
+                      </div>
+                    </div>
+                  )}
+
+                  {position.status === "won" && (
+                    <div className="mb-4">
+                      <div className="text-green-400 text-sm">Won</div>
+                      <div className="text-2xl font-bold text-green-400">
+                        {position.potentialPayout} BDAG
+                      </div>
+                      {/* <button
                       onClick={() => handleClaim(position.id)}
                       disabled={claimingId === position.id}
                       className="mt-2 px-4 py-2 bg-gradient-to-r from-green-500 to-emerald-600 rounded-lg text-white font-medium hover:from-green-400 hover:to-emerald-500 transition-all disabled:opacity-50 w-full sm:w-auto"
                     >
                       {claimingId === position.id ? "Claiming..." : "Claim"}
                     </button> */}
-                  </div>
-                )}
-
-                {position.status === "lost" && (
-                  <div className="mb-4">
-                    <div className="text-red-400 text-sm">Lost</div>
-                    <div className="text-xl font-bold text-red-400">
-                      -{position.stakeAmount} BDAG
                     </div>
-                  </div>
-                )}
+                  )}
+
+                  {position.status === "lost" && (
+                    <div className="mb-4">
+                      <div className="text-red-400 text-sm">Lost</div>
+                      <div className="text-xl font-bold text-red-400">
+                        -{position.stakeAmount} BDAG
+                      </div>
+                    </div>
+                  )}
+                </div>
               </div>
             </div>
-          </div>
-        ))}
+          ))}
       </div>
 
-      {filteredPositions.length === 0 && (
+      {!loading && !error && filteredPositions.length === 0 && (
         <div className="text-center py-12">
           <Trophy className="w-16 h-16 text-white/30 mx-auto mb-4" />
-          <h3 className="text-xl font-semibold text-white mb-2">
-            No positions found
-          </h3>
+          <h3 className="text-xl font-semibold text-white mb-2">No positions found</h3>
           <p className="text-white/60">
             {activeTab === "active"
               ? "You don't have any active positions yet"

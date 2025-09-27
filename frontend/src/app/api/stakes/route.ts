@@ -81,11 +81,9 @@ export async function POST(req: Request) {
       { success: true, message: "Stake created successfully", stake: data },
       { status: 201 }
     );
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message || "Server error" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Server error";
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
 
@@ -95,6 +93,31 @@ export async function GET(req: Request) {
     const { searchParams } = new URL(req.url);
     const user_id = searchParams.get("user_id");
     const market_id = searchParams.get("market_id");
+    const wallet_address = searchParams.get("wallet_address");
+
+    let resolvedUserId = user_id;
+
+    // If wallet_address provided but no user_id, look up the user id
+    if (!resolvedUserId && wallet_address) {
+      const { data: userLookup, error: userLookupError } = await supabase
+        .from("users")
+        .select("id")
+        .eq("wallet_address", wallet_address)
+        .maybeSingle();
+
+      if (userLookupError) {
+        return NextResponse.json(
+          { success: false, message: userLookupError.message },
+          { status: 500 }
+        );
+      }
+
+      if (!userLookup) {
+        return NextResponse.json({ success: true, stakes: [] }, { status: 200 });
+      }
+
+      resolvedUserId = userLookup.id;
+    }
 
     let query = supabase.from("stakes").select(`
       id,
@@ -105,11 +128,17 @@ export async function GET(req: Request) {
       user_id,
       market_id,
       users(email, username, wallet_address),
-      markets(title, category_id, start_date, end_date)
+      markets(
+      title,
+      category_id,
+      start_date,
+      end_date,
+      categories(id,name)
+      )
     `);
 
-    if (user_id) {
-      query = query.eq("user_id", user_id);
+    if (resolvedUserId) {
+      query = query.eq("user_id", resolvedUserId);
     }
 
     if (market_id) {
@@ -123,11 +152,9 @@ export async function GET(req: Request) {
     }
 
     return NextResponse.json({ success: true, stakes: data });
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message || "Server error" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Server error";
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
 
@@ -222,10 +249,8 @@ export async function PUT(req: Request, { params }: { params: { id: string } }) 
       success: true,
       message: `Market settled. Winning choice: ${winningChoice}`,
     });
-  } catch (err: any) {
-    return NextResponse.json(
-      { success: false, message: err.message || "Server error" },
-      { status: 500 }
-    );
+  } catch (err: unknown) {
+    const message = err instanceof Error ? err.message : "Server error";
+    return NextResponse.json({ success: false, message }, { status: 500 });
   }
 }
