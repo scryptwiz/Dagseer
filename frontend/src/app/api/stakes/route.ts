@@ -14,6 +14,21 @@ export async function POST(req: Request) {
       );
     }
 
+    // Check if user has already staked on this market
+    const { data: existingStake } = await supabase
+      .from("stakes")
+      .select("id")
+      .eq("user_id", user_id)
+      .eq("market_id", market_id)
+      .maybeSingle();
+
+    if (existingStake) {
+      return NextResponse.json(
+        { success: false, message: "User has already staked on this market" },
+        { status: 409 }
+      );
+    }
+
     // 1. Fetch market to check validity
     const { data: market, error: marketError } = await supabase
       .from("markets")
@@ -22,10 +37,7 @@ export async function POST(req: Request) {
       .single();
 
     if (marketError || !market) {
-      return NextResponse.json(
-        { success: false, message: "Market not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "Market not found" }, { status: 404 });
     }
 
     // 2. Check if market is active
@@ -62,10 +74,7 @@ export async function POST(req: Request) {
       .single();
 
     if (error) {
-      return NextResponse.json(
-        { success: false, message: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 
     return NextResponse.json(
@@ -110,10 +119,7 @@ export async function GET(req: Request) {
     const { data, error } = await query;
 
     if (error) {
-      return NextResponse.json(
-        { success: false, message: error.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, message: error.message }, { status: 500 });
     }
 
     return NextResponse.json({ success: true, stakes: data });
@@ -125,17 +131,11 @@ export async function GET(req: Request) {
   }
 }
 
-export async function PUT(
-  req: Request,
-  { params }: { params: { id: string } }
-) {
+export async function PUT(req: Request, { params }: { params: { id: string } }) {
   try {
     const authHeader = req.headers.get("authorization");
     if (!authHeader) {
-      return NextResponse.json(
-        { success: false, message: "No token provided" },
-        { status: 401 }
-      );
+      return NextResponse.json({ success: false, message: "No token provided" }, { status: 401 });
     }
 
     if (!authHeader.startsWith("Bearer ")) {
@@ -148,10 +148,7 @@ export async function PUT(
     const token = authHeader.split(" ")[1];
     const decoded = verifyToken(token);
     if (!decoded) {
-      return NextResponse.json(
-        { success: false, message: "Invalid token" },
-        { status: 403 }
-      );
+      return NextResponse.json({ success: false, message: "Invalid token" }, { status: 403 });
     }
 
     const body = await req.json();
@@ -174,10 +171,7 @@ export async function PUT(
       .single();
 
     if (marketError || !market) {
-      return NextResponse.json(
-        { success: false, message: "Market not found" },
-        { status: 404 }
-      );
+      return NextResponse.json({ success: false, message: "Market not found" }, { status: 404 });
     }
 
     if (!market.is_active) {
@@ -196,10 +190,7 @@ export async function PUT(
       .eq("status", "pending");
 
     if (winError) {
-      return NextResponse.json(
-        { success: false, message: winError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, message: winError.message }, { status: 500 });
     }
 
     // ✅ Update losers
@@ -211,10 +202,7 @@ export async function PUT(
       .eq("status", "pending");
 
     if (loseError) {
-      return NextResponse.json(
-        { success: false, message: loseError.message },
-        { status: 500 }
-      );
+      return NextResponse.json({ success: false, message: loseError.message }, { status: 500 });
     }
 
     // ✅ Close market after settlement

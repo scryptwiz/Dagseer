@@ -38,9 +38,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
         if (!res.ok) throw new Error("Failed to fetch markets");
 
         const result = await res.json();
-        const apiMarkets: ApiMarket[] = Array.isArray(result)
-          ? result
-          : result.data;
+        const apiMarkets: ApiMarket[] = Array.isArray(result) ? result : result.data;
 
         const formattedMarkets: ApiMarket[] = apiMarkets.map((m) => ({
           id: m.id,
@@ -90,9 +88,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
   };
 
   if (loading) {
-    return (
-      <p className="text-center py-10 text-gray-500">Loading markets...</p>
-    );
+    return <p className="text-center py-10 text-gray-500">Loading markets...</p>;
   }
 
   return (
@@ -148,14 +144,18 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                     <span className="text-green-400 font-semibold">
                       YES {market.stats.yesCount}%
                     </span>
-                    <span className="text-red-400 font-semibold">
-                      NO {market.stats.noCount}%
-                    </span>
+                    <span className="text-red-400 font-semibold">NO {market.stats.noCount}%</span>
                   </div>
                   <div className="h-2 sm:h-3 bg-white/10 rounded-full overflow-hidden">
                     <div
                       className="h-full bg-gradient-to-r from-green-400 to-emerald-500 transition-all duration-700 ease-out"
-                      style={{ width: `${market.stats.yesCount}%` }}
+                      style={{
+                        width: `${
+                          market.stats.yesCount > 0
+                            ? (market.stats.yesCount / market.stats.totalStakers) * 100
+                            : 0
+                        }%`,
+                      }}
                     ></div>
                   </div>
                 </div>
@@ -165,9 +165,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                   <div className="flex items-center space-x-4">
                     <div className="flex items-center">
                       <Users className="w-4 h-4 mr-1 text-gray-400" />
-                      <span className="text-gray-400">
-                        {market.stats.totalStakers}
-                      </span>
+                      <span className="text-gray-400">{market.stats.totalStakers}</span>
                     </div>
                     <div className="text-gray-400">${market.stats.totalAmount}</div>
                   </div>
@@ -178,9 +176,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                 </div>
 
                 <div className="flex items-center justify-end mt-4 text-cyan-400 opacity-0 group-hover:opacity-100 transition-opacity">
-                  <span className="text-xs sm:text-sm mr-2 text-gray-400">
-                    View Details
-                  </span>
+                  <span className="text-xs sm:text-sm mr-2 text-gray-400">View Details</span>
                   <ArrowRight className="w-4 h-4 text-gray-400" />
                 </div>
               </div>
@@ -190,9 +186,7 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
 
       {/* All Markets */}
       <div>
-        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">
-          All Markets
-        </h2>
+        <h2 className="text-xl sm:text-2xl font-semibold text-foreground mb-4">All Markets</h2>
         <div className="grid gap-4 grid-cols-1 sm:grid-cols-1  lg:grid-cols-1">
           {markets.map((market) => (
             <div
@@ -240,17 +234,13 @@ export default function MarketsList({ onSelectMarket }: MarketsListProps) {
                     <div className="text-lg sm:text-2xl font-bold text-green-400">
                       {market.stats.yesCount}%
                     </div>
-                    <div className="text-xs text-gray-400 dark:text-white/60 ">
-                      YES
-                    </div>
+                    <div className="text-xs text-gray-400 dark:text-white/60 ">YES</div>
                   </div>
                   <div className="text-center">
                     <div className="text-lg sm:text-2xl font-bold text-red-400">
                       {market.stats.noCount}%
                     </div>
-                    <div className="text-xs text-gray-400 dark:text-white/60">
-                      NO
-                    </div>
+                    <div className="text-xs text-gray-400 dark:text-white/60">NO</div>
                   </div>
                   <ArrowRight className="w-5 h-5 text-gray-400 dark:text-white/40 group-hover:text-cyan-400 transition-colors" />
                 </div>

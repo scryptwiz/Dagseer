@@ -5,6 +5,20 @@ import { Button } from "@/components/ui/button";
 import { cn } from "@/lib/utils";
 import { Outfit } from "next/font/google";
 import Link from "next/link";
+import { useWriteContract } from "wagmi";
+import { tokenAddress } from "@/constants";
+import { Coins } from "lucide-react";
+
+// Minimal ERC-20 ABI for faucet
+const ERC20ABI = [
+  {
+    constant: false,
+    inputs: [],
+    name: "faucet",
+    outputs: [],
+    type: "function",
+  },
+];
 
 const outfit = Outfit({ subsets: ["latin"] });
 
@@ -33,6 +47,21 @@ export default function Home() {
 }
 
 function HeroSection() {
+  const { writeContractAsync } = useWriteContract();
+
+  const handleGetTokens = async () => {
+    try {
+      await writeContractAsync({
+        address: tokenAddress as `0x${string}`,
+        abi: ERC20ABI,
+        functionName: "faucet",
+      });
+      alert("Tokens claimed! Check your wallet.");
+    } catch (error) {
+      console.error("Faucet failed:", error);
+      alert("Failed to get tokens. Make sure you're connected.");
+    }
+  };
   return (
     <main>
       <div className="background-glow top-left"></div>
@@ -48,14 +77,23 @@ function HeroSection() {
           The simplest way to stake on what matters.
         </h1>
         <p className="max-w-[448px] text-muted-foreground text-center text-base md:text-lg lg:text-xl">
-          Forecast the future, on-chain. Say Yes or No, stake BDAG, and earn
-          when you’re right.
+          Forecast the future, on-chain. Say Yes or No, stake BDAG, and earn when you’re right.
         </p>
 
         <div className="flex flex-col md:flex-row gap-4 mt-10">
           <Link href="/markets">
             <Button variant="default">View Market</Button>
           </Link>
+        </div>
+        {/* Get Tokens Button */}
+        <div className="mt-4">
+          <button
+            onClick={handleGetTokens}
+            className="group relative inline-flex items-center space-x-3 px-6 py-3 bg-gradient-to-r from-green-500 to-blue-600 rounded-xl font-semibold text-white text-lg shadow-xl shadow-green-500/25 hover:shadow-green-500/40 transition-all duration-300 hover:scale-105"
+          >
+            <Coins className="w-5 h-5 group-hover:rotate-12 transition-transform" />
+            <span>Get Test Tokens</span>
+          </button>
         </div>
       </div>
     </main>
@@ -104,9 +142,7 @@ function WhySeer() {
               className="flex flex-col gap-4 bg-white/5 border  dark:border-white/10 rounded-2xl p-6 hover:bg-white/10 transition-all duration-300 hover:scale-105"
             >
               <h4 className="text-xl font-semibold">{feature.title}</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                {feature.description}
-              </p>
+              <p className="text-muted-foreground leading-relaxed">{feature.description}</p>
             </div>
           ))}
         </div>
@@ -129,8 +165,7 @@ const howItWorks = [
   {
     step: 3,
     title: "Predict & Stake",
-    description:
-      "Pick a side, stake BDAG tokens, and claim rewards if your side wins.",
+    description: "Pick a side, stake BDAG tokens, and claim rewards if your side wins.",
   },
 ];
 
@@ -141,9 +176,7 @@ function HowItWorks() {
         {/* header */}
         <div className="flex flex-col items-center gap-2">
           <p className="uppercase text-xl">How It Works</p>
-          <h3 className="font-bold text-3xl text-center">
-            Predict in 3 Simple Steps
-          </h3>
+          <h3 className="font-bold text-3xl text-center">Predict in 3 Simple Steps</h3>
         </div>
 
         {/* steps */}
@@ -157,9 +190,7 @@ function HowItWorks() {
                 {item.step}
               </div>
               <h4 className="text-xl font-semibold">{item.title}</h4>
-              <p className="text-muted-foreground leading-relaxed">
-                {item.description}
-              </p>
+              <p className="text-muted-foreground leading-relaxed">{item.description}</p>
             </div>
           ))}
         </div>

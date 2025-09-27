@@ -20,6 +20,7 @@
     "typescript": "^5.3.3"
   },
   "dependencies": {
-    "dotenv": "^16.4.5"
+    "dotenv": "^16.4.5",
+    "openzeppelin-contracts": "^4.0.0"
   }
 }
